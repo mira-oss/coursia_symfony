@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Coursia Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coursia-orange: #F97316;
+            --coursia-orange-hover: #EA580C;
+            --coursia-dark: #020617;
+            --coursia-gray: #E5E7EB;
+            --coursia-gray-light: #F9FAFB;
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #F5F5F5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.15),
+                        0 8px 30px rgba(0, 0, 0, 0.1),
+                        0 0 0 1px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            display: flex;
+            width: 75%;
+            max-width: 1200px;
+            height: 80vh;
+            min-height: 650px;
+        }
+
+        .register-illustration {
+            background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%);
+            flex: 0 0 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-illustration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .illustration-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: white;
+        }
+
+        .illustration-icon {
+            font-size: 100px;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        .illustration-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .illustration-text {
+            font-size: 15px;
+            opacity: 0.9;
+            max-width: 280px;
+            line-height: 1.6;
+        }
+
+        .register-form-section {
+            flex: 1;
+            padding: 40px 50px;
+            overflow-y: auto;
+            background: #FAFBFC;
+        }
+
+        .register-form-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .register-form-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .register-form-section::-webkit-scrollbar-thumb {
+            background: var(--coursia-orange);
+            border-radius: 10px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .brand-logo i {
+            font-size: 28px;
+            color: var(--coursia-orange);
+        }
+
+        .brand-logo span {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--coursia-dark);
+        }
+
+        .register-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--coursia-dark);
+            margin-bottom: 8px;
+        }
+
+        .register-subtitle {
+            color: #6B7280;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6B7280;
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            border: none;
+            border-bottom: 2px solid var(--coursia-gray);
+            border-radius: 0;
+            padding: 10px 0;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: none;
+            border-color: var(--coursia-orange);
+        }
+
+        .form-control::placeholder {
+            color: #9CA3AF;
+        }
+
+        .btn-coursia {
+            background: var(--coursia-orange);
+            border: none;
+            border-radius: 50px;
+            padding: 14px 35px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-coursia:hover {
+            background: var(--coursia-orange-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-coursia i {
+            margin-left: 8px;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .back-link {
+            color: var(--coursia-orange);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 20px;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--coursia-orange-hover);
+            transform: translateX(-3px);
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--coursia-dark);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--coursia-gray);
+        }
+
+        @media (max-width: 768px) {
+            .register-illustration {
+                display: none;
+            }
+            .register-form-section {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <!-- Illustration Section -->
+        <div class="register-illustration">
+            <div class="illustration-content">
+                <div class="illustration-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <h2 class="illustration-title">Rejoignez Coursia</h2>
+                <p class="illustration-text">Créez votre compte administrateur et commencez à gérer votre plateforme de livraison.</p>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="register-form-section">
+            <div class="brand-logo">
+                <i class="bi bi-box-seam"></i>
+                <span>Coursia</span>
+            </div>
+
+            <h1 class="register-title">Créer un compte</h1>
+            <p class="register-subtitle">Remplissez vos informations pour vous inscrire en tant qu'administrateur.</p>
+
+            {% if error %}
+                <div class="alert alert-danger mb-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ path('admin_register') }}">
+                <div class="form-section-title">
+                    <i class="bi bi-person me-2"></i>Informations personnelles
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">PRENOM *</label>
+                        <input type="text" name="firstName" class="form-control" placeholder="Votre prénom" required value="{{ data.firstName ?? '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">NOM *</label>
+                        <input type="text" name="lastName" class="form-control" placeholder="Votre nom" required value="{{ data.lastName ?? '' }}">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">EMAIL *</label>
+                        <input type="email" name="email" class="form-control" placeholder="identifiant@gmail.com" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$" title="L'adresse email doit être au format identifiant@gmail.com" required value="{{ data.email ?? '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">TELEPHONE *</label>
+                        <input type="text" name="phone" class="form-control" placeholder="+229 XX XX XX XX" required value="{{ data.phone ?? '' }}">
+                    </div>
+                </div>
+
+                <div class="form-section-title">
+                    <i class="bi bi-lock me-2"></i>Sécurité
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">MOT DE PASSE *</label>
+                        <input type="password" name="password" class="form-control" placeholder="Minimum 6 caractères" required minlength="6">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">CONFIRMER *</label>
+                        <input type="password" name="confirmPassword" class="form-control" placeholder="Confirmez le mot de passe" required minlength="6">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-coursia mt-3">
+                    Créer mon compte <i class="bi bi-arrow-right"></i>
+                </button>
+
+                <a href="{{ path('admin_login') }}" class="back-link">
+                    <i class="bi bi-arrow-left"></i> Retour à la connexion
+                </a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

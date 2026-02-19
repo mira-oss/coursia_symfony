@@ -1,0 +1,233 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Course #{{ course.id }} - Coursia Admin{% endblock %}
+{% block page_title %}Detail de la course{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-truck"></i> {{ course.title }}</span>
+                {% if course.status == 'created' %}
+                    <span class="badge bg-secondary">Cree</span>
+                {% elseif course.status == 'accepted' %}
+                    <span class="badge bg-info">Accepte</span>
+                {% elseif course.status == 'started' %}
+                    <span class="badge bg-primary">En cours</span>
+                {% elseif course.status == 'delivered' %}
+                    <span class="badge bg-warning">Livre</span>
+                {% elseif course.status == 'finished' %}
+                    <span class="badge bg-success">Termine</span>
+                {% elseif course.status == 'cancelled' %}
+                    <span class="badge bg-danger">Annule</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Depart</h6>
+                        <p><i class="bi bi-geo-alt text-success"></i> {{ course.departureAddress }}</p>
+                        {% if course.departureLatitude %}
+                            <small class="text-muted">GPS: {{ course.departureLatitude }}, {{ course.departureLongitude }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Arrivee</h6>
+                        <p><i class="bi bi-geo-alt-fill text-danger"></i> {{ course.deliveryAddress }}</p>
+                        {% if course.deliveryLatitude %}
+                            <small class="text-muted">GPS: {{ course.deliveryLatitude }}, {{ course.deliveryLongitude }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if course.description %}
+                <div class="mb-4">
+                    <h6 class="text-muted">Description</h6>
+                    <p>{{ course.description }}</p>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6 class="text-muted">Type</h6>
+                        <p>
+                            {% if course.type == 'regional' %}
+                                <span class="badge bg-info">Regional</span>
+                            {% elseif course.type == 'national' %}
+                                <span class="badge bg-primary">National</span>
+                            {% else %}
+                                <span class="badge bg-dark">International</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted">Prix</h6>
+                        <p>{{ course.price ? course.price ~ ' FCFA' : 'Non defini' }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted">Poids</h6>
+                        <p>{{ course.packageWeight ?? 'Non specifie' }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted">Negociable</h6>
+                        <p>{{ course.isNegotiable ? 'Oui' : 'Non' }}</p>
+                    </div>
+                </div>
+
+                {% if course.deliveryDateStart %}
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Date livraison souhaitee</h6>
+                        <p>{{ course.deliveryDateStart|date('d/m/Y H:i') }}
+                        {% if course.deliveryDateEnd %}
+                            - {{ course.deliveryDateEnd|date('d/m/Y H:i') }}
+                        {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if course.photos|length > 0 %}
+                <div class="mt-4">
+                    <h6 class="text-muted">Photos du colis</h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% for photo in course.photos %}
+                            <img src="{{ asset('uploads/courses/' ~ photo) }}" alt="Photo" class="img-thumbnail" style="max-width: 150px;">
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Codes de verification (admin peut voir) -->
+        {% if course.pickupCode or course.deliveryCode %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-key"></i> Codes de verification
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Code de recuperation</h6>
+                        <p class="h4">{{ course.pickupCode ?? '-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Code de livraison</h6>
+                        <p class="h4">{{ course.deliveryCode ?? '-' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <!-- Elu -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-person"></i> Elu (demandeur)
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                        {{ course.createdBy.firstName|slice(0,1)|upper }}
+                    </div>
+                    <div>
+                        <strong>{{ course.createdBy.firstName }} {{ course.createdBy.lastName }}</strong>
+                        <br>
+                        <small class="text-muted">{{ course.createdBy.email }}</small>
+                        <br>
+                        <small>{{ course.createdBy.phone }}</small>
+                    </div>
+                </div>
+                <a href="{{ path('admin_users_show', {id: course.createdBy.id}) }}" class="btn btn-sm btn-outline-primary mt-3">
+                    Voir profil
+                </a>
+            </div>
+        </div>
+
+        <!-- Chevalier -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-shield"></i> Chevalier (livreur)
+            </div>
+            <div class="card-body">
+                {% if course.acceptedBy %}
+                <div class="d-flex align-items-center">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                        {{ course.acceptedBy.firstName|slice(0,1)|upper }}
+                    </div>
+                    <div>
+                        <strong>{{ course.acceptedBy.firstName }} {{ course.acceptedBy.lastName }}</strong>
+                        <br>
+                        <small class="text-muted">{{ course.acceptedBy.email }}</small>
+                        <br>
+                        <small>{{ course.acceptedBy.phone }}</small>
+                    </div>
+                </div>
+                <a href="{{ path('admin_users_show', {id: course.acceptedBy.id}) }}" class="btn btn-sm btn-outline-success mt-3">
+                    Voir profil
+                </a>
+                {% else %}
+                <p class="text-muted text-center mb-0">Aucun chevalier assigne</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history"></i> Chronologie
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Cree</strong>
+                        <br>
+                        <small class="text-muted">{{ course.createdAt|date('d/m/Y H:i') }}</small>
+                    </li>
+                    {% if course.status in ['accepted', 'started', 'delivered', 'finished'] %}
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Accepte</strong>
+                    </li>
+                    {% endif %}
+                    {% if course.status in ['started', 'delivered', 'finished'] %}
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>En cours de livraison</strong>
+                    </li>
+                    {% endif %}
+                    {% if course.status in ['delivered', 'finished'] %}
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Livre</strong>
+                    </li>
+                    {% endif %}
+                    {% if course.status == 'finished' %}
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Termine</strong>
+                    </li>
+                    {% endif %}
+                    {% if course.status == 'cancelled' %}
+                    <li class="mb-2">
+                        <i class="bi bi-x-circle-fill text-danger"></i>
+                        <strong>Annule</strong>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ path('admin_courses') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Retour a la liste
+    </a>
+</div>
+{% endblock %}

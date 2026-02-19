@@ -1,0 +1,220 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Recherche "{{ query }}" - Coursia Admin{% endblock %}
+
+{% block greeting %}Recherche{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 style="font-weight: 700; color: var(--coursia-dark);">
+        {% if query %}
+            Résultats pour "{{ query }}"
+            <span style="font-weight: 400; font-size: 16px; color: var(--coursia-text-muted);">
+                — {{ totalResults }} résultat{{ totalResults != 1 ? 's' : '' }}
+            </span>
+        {% else %}
+            Veuillez saisir un terme de recherche
+        {% endif %}
+    </h4>
+</div>
+
+{% if query and totalResults == 0 %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-search" style="font-size: 4rem; color: var(--coursia-text-muted); opacity: 0.4;"></i>
+        <h5 class="mt-3" style="color: var(--coursia-dark);">Aucun résultat trouvé</h5>
+        <p style="color: var(--coursia-text-muted);">Essayez avec d'autres mots-clés ou vérifiez l'orthographe.</p>
+    </div>
+</div>
+{% endif %}
+
+{% if results.users|length > 0 %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="section-header mb-3">
+            <h5 class="section-title">
+                <i class="bi bi-people me-2" style="color: #2563EB;"></i>
+                Utilisateurs
+                <span class="badge" style="background: #DBEAFE; color: #2563EB;">{{ results.users|length }}</span>
+            </h5>
+            <a href="{{ path('admin_users') }}" class="section-link">Voir tous ></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Statut</th>
+                        <th>Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in results.users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
+                                    {{ user.firstName|slice(0,1)|upper }}
+                                </div>
+                                <div>
+                                    <strong style="color: var(--coursia-dark);">{{ user.firstName }} {{ user.lastName }}</strong>
+                                    <br><small style="color: var(--coursia-text-muted);">{{ user.phone }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                                <span class="badge" style="background: #FEF3C7; color: #D97706;">Admin</span>
+                            {% elseif user.role == 'chevalier' %}
+                                <span class="badge" style="background: #D1FAE5; color: #059669;">Chevalier</span>
+                            {% else %}
+                                <span class="badge" style="background: #DBEAFE; color: #2563EB;">Élu</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.isVerified %}
+                                <span class="status-badge completed"><i class="bi bi-check-circle-fill"></i> Vérifié</span>
+                            {% else %}
+                                <span class="status-badge pending"><i class="bi bi-clock-fill"></i> Non vérifié</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-sm" style="background: var(--coursia-gray-light); color: #6B7280;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if results.courses|length > 0 %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="section-header mb-3">
+            <h5 class="section-title">
+                <i class="bi bi-truck me-2" style="color: var(--coursia-orange);"></i>
+                Courses
+                <span class="badge" style="background: var(--coursia-orange-light); color: var(--coursia-orange);">{{ results.courses|length }}</span>
+            </h5>
+            <a href="{{ path('admin_courses') }}" class="section-link">Voir toutes ></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>N. Course</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Prix</th>
+                        <th>Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in results.courses %}
+                    <tr>
+                        <td><strong>#{{ course.id }}</strong></td>
+                        <td>
+                            {% if course.status == 'finished' %}
+                                <span class="status-badge completed"><i class="bi bi-check-circle-fill"></i> Terminé</span>
+                            {% elseif course.status == 'created' or course.status == 'accepted' %}
+                                <span class="status-badge pending"><i class="bi bi-clock-fill"></i> En attente</span>
+                            {% elseif course.status == 'cancelled' %}
+                                <span class="status-badge failed"><i class="bi bi-x-circle-fill"></i> Annulé</span>
+                            {% elseif course.status == 'started' or course.status == 'delivered' %}
+                                <span class="status-badge completed"><i class="bi bi-arrow-repeat"></i> En cours</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ course.createdAt|date('d/m/Y à H:i') }}</td>
+                        <td class="amount-cell">{{ course.estimatedPrice|default(0) }} FCFA</td>
+                        <td>
+                            <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="btn btn-sm" style="background: var(--coursia-gray-light); color: #6B7280;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if results.chevalierRequests|length > 0 %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="section-header mb-3">
+            <h5 class="section-title">
+                <i class="bi bi-shield-check me-2" style="color: #D97706;"></i>
+                Demandes Chevalier
+                <span class="badge" style="background: #FEF3C7; color: #D97706;">{{ results.chevalierRequests|length }}</span>
+            </h5>
+            <a href="{{ path('admin_chevaliers_pending') }}" class="section-link">Voir toutes ></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Candidat</th>
+                        <th>Email</th>
+                        <th>Véhicule</th>
+                        <th>Statut</th>
+                        <th>Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in results.chevalierRequests %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
+                                    {{ req.firstName|slice(0,1)|upper }}{{ req.lastName|slice(0,1)|upper }}
+                                </div>
+                                <div>
+                                    <strong style="color: var(--coursia-dark);">{{ req.firstName }} {{ req.lastName }}</strong>
+                                    <br><small style="color: var(--coursia-text-muted);">{{ req.createdAt|date('d/m/Y') }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ req.email }}</td>
+                        <td>
+                            <i class="bi bi-{% if req.vehicleType == 'moto' %}bicycle{% else %}car-front{% endif %} me-1"></i>
+                            {{ req.vehicleType|capitalize }}
+                        </td>
+                        <td>
+                            {% if req.status == 'pending' %}
+                                <span class="badge badge-pending">En attente</span>
+                            {% elseif req.status == 'approved' %}
+                                <span class="badge badge-approved">Approuvé</span>
+                            {% else %}
+                                <span class="badge badge-rejected">Rejeté</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if req.status == 'pending' %}
+                                <a href="{{ path('admin_chevaliers_review', {id: req.id}) }}" class="btn btn-coursia btn-sm">
+                                    Voir
+                                </a>
+                            {% else %}
+                                <span class="btn btn-sm" style="background: var(--coursia-gray-light); color: #6B7280;">
+                                    Traité
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

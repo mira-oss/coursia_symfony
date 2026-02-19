@@ -1,0 +1,93 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Demandes Chevalier - Coursia Admin{% endblock %}
+{% block page_title %}Demandes Chevalier en attente{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-shield-check"></i> Demandes en attente ({{ requests|length }})</span>
+        <span class="badge bg-warning text-dark">Traitement sous 2h</span>
+    </div>
+    <div class="card-body">
+        {% if requests|length > 0 %}
+        <div class="row">
+            {% for request in requests %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                {{ request.firstName|slice(0,1)|upper }}{{ request.lastName|slice(0,1)|upper }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ request.firstName }} {{ request.lastName }}</h6>
+                                <small class="text-muted">{{ request.email }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm table-borderless mb-3">
+                            <tr>
+                                <td><i class="bi bi-phone text-muted"></i></td>
+                                <td>{{ request.phone }}</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-card-heading text-muted"></i></td>
+                                <td>NPI: <strong>{{ request.npi }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-{% if request.vehicleType == 'moto' %}bicycle{% else %}car-front{% endif %} text-muted"></i></td>
+                                <td>
+                                    {{ request.vehicleType|upper }}
+                                    <span class="badge bg-dark">{{ request.vehicleRegistration }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-geo-alt text-muted"></i></td>
+                                <td>{{ request.city ?? request.nationality }}</td>
+                            </tr>
+                        </table>
+
+                        <div class="d-flex gap-2 mb-3">
+                            {% if request.selfiePath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Selfie</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-x"></i> Selfie</span>
+                            {% endif %}
+
+                            {% if request.selfieWithCipPath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> CIP</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-x"></i> CIP</span>
+                            {% endif %}
+
+                            {% if request.vehicleDocumentsPath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Docs</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="bi bi-dash"></i> Docs</span>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-muted mb-3">
+                            <small><i class="bi bi-clock"></i> {{ request.createdAt|date('d/m/Y H:i') }}</small>
+                        </p>
+
+                        <a href="{{ path('admin_chevaliers_review', {id: request.id}) }}" class="btn btn-primary w-100">
+                            <i class="bi bi-eye"></i> Examiner la demande
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <p class="text-muted mt-3">Aucune demande en attente</p>
+            <p class="text-muted">Les nouvelles demandes apparaitront ici automatiquement.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

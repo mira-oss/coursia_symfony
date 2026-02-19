@@ -1,0 +1,441 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Paramètres - Coursia Admin{% endblock %}
+
+{% block greeting %}Paramètres{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-card {
+        border-radius: 16px;
+        background: var(--coursia-white);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .settings-card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--coursia-gray);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .settings-card-header i {
+        font-size: 22px;
+        color: var(--coursia-orange);
+    }
+
+    .settings-card-header h5 {
+        font-weight: 700;
+        color: var(--coursia-dark);
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .settings-card-header p {
+        color: var(--coursia-text-muted);
+        font-size: 13px;
+        margin: 2px 0 0 0;
+    }
+
+    .settings-card-body {
+        padding: 24px;
+    }
+
+    .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--coursia-gray-light);
+    }
+
+    .setting-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .setting-row:first-child {
+        padding-top: 0;
+    }
+
+    .setting-label h6 {
+        font-weight: 600;
+        color: var(--coursia-dark);
+        margin: 0 0 2px 0;
+        font-size: 14px;
+    }
+
+    .setting-label p {
+        color: var(--coursia-text-muted);
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .custom-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .custom-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .custom-switch .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--coursia-gray);
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+
+    .custom-switch .slider::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        top: 3px;
+        left: 3px;
+        transition: 0.3s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .custom-switch input:checked + .slider {
+        background: var(--coursia-orange);
+    }
+
+    .custom-switch input:checked + .slider::after {
+        transform: translateX(22px);
+    }
+
+    .settings-nav {
+        position: sticky;
+        top: 20px;
+    }
+
+    .settings-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: var(--coursia-text);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+        margin-bottom: 4px;
+    }
+
+    .settings-nav-item:hover {
+        background: var(--coursia-orange-light);
+        color: var(--coursia-orange);
+    }
+
+    .settings-nav-item.active {
+        background: var(--coursia-orange-light);
+        color: var(--coursia-orange);
+        font-weight: 600;
+    }
+
+    .settings-nav-item i {
+        font-size: 18px;
+        width: 22px;
+    }
+
+    .maintenance-warning {
+        background: #FEF3C7;
+        border: 1px solid #F59E0B;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .maintenance-warning i {
+        font-size: 24px;
+        color: #D97706;
+    }
+
+    .maintenance-warning p {
+        margin: 0;
+        font-size: 13px;
+        color: #92400E;
+    }
+
+    .input-suffix {
+        position: relative;
+    }
+
+    .input-suffix .suffix {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--coursia-text-muted);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .input-suffix input {
+        padding-right: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if success %}
+    <div class="alert alert-success mb-4">
+        <i class="bi bi-check-circle me-2"></i>{{ success }}
+    </div>
+{% endif %}
+
+<div class="row">
+    <!-- Navigation latérale -->
+    <div class="col-lg-3 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="settings-nav">
+                    <a href="#general" class="settings-nav-item active" onclick="showSection('general', this)">
+                        <i class="bi bi-sliders"></i> Général
+                    </a>
+                    <a href="#courses" class="settings-nav-item" onclick="showSection('courses', this)">
+                        <i class="bi bi-truck"></i> Courses
+                    </a>
+                    <a href="#notifications" class="settings-nav-item" onclick="showSection('notifications', this)">
+                        <i class="bi bi-bell"></i> Notifications
+                    </a>
+                    <a href="#maintenance" class="settings-nav-item" onclick="showSection('maintenance', this)">
+                        <i class="bi bi-tools"></i> Maintenance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu des paramètres -->
+    <div class="col-lg-9">
+
+        <!-- Paramètres généraux -->
+        <div id="section-general" class="settings-section">
+            <form method="POST" action="{{ path('admin_settings') }}">
+                <input type="hidden" name="action" value="update_general">
+                <div class="settings-card card">
+                    <div class="settings-card-header">
+                        <div>
+                            <i class="bi bi-sliders"></i>
+                        </div>
+                        <div>
+                            <h5>Paramètres généraux</h5>
+                            <p>Configurez les informations de base de la plateforme.</p>
+                        </div>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Nom de la plateforme</label>
+                                <input type="text" name="platform_name" class="form-control" value="{{ settings.platform_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Devise</label>
+                                <select name="currency" class="form-select">
+                                    <option value="XOF" {{ settings.currency == 'XOF' ? 'selected' : '' }}>XOF (Franc CFA)</option>
+                                    <option value="EUR" {{ settings.currency == 'EUR' ? 'selected' : '' }}>EUR (Euro)</option>
+                                    <option value="USD" {{ settings.currency == 'USD' ? 'selected' : '' }}>USD (Dollar)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Email de contact</label>
+                                <input type="email" name="contact_email" class="form-control" value="{{ settings.contact_email }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Téléphone de contact</label>
+                                <input type="text" name="contact_phone" class="form-control" value="{{ settings.contact_phone }}">
+                            </div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button type="submit" class="btn btn-coursia">
+                                <i class="bi bi-check2 me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Paramètres courses -->
+        <div id="section-courses" class="settings-section" style="display: none;">
+            <form method="POST" action="{{ path('admin_settings') }}">
+                <input type="hidden" name="action" value="update_courses">
+                <div class="settings-card card">
+                    <div class="settings-card-header">
+                        <div>
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div>
+                            <h5>Paramètres des courses</h5>
+                            <p>Configurez les tarifs et limites des courses.</p>
+                        </div>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Commission plateforme</label>
+                                <div class="input-suffix">
+                                    <input type="number" name="commission_rate" class="form-control" value="{{ settings.commission_rate }}" min="0" max="100">
+                                    <span class="suffix">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Prix minimum</label>
+                                <div class="input-suffix">
+                                    <input type="number" name="min_course_price" class="form-control" value="{{ settings.min_course_price }}" min="0">
+                                    <span class="suffix">{{ settings.currency }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Distance maximale</label>
+                                <div class="input-suffix">
+                                    <input type="number" name="max_course_distance" class="form-control" value="{{ settings.max_course_distance }}" min="1">
+                                    <span class="suffix">km</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button type="submit" class="btn btn-coursia">
+                                <i class="bi bi-check2 me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Paramètres notifications -->
+        <div id="section-notifications" class="settings-section" style="display: none;">
+            <form method="POST" action="{{ path('admin_settings') }}">
+                <input type="hidden" name="action" value="update_notifications">
+                <div class="settings-card card">
+                    <div class="settings-card-header">
+                        <div>
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <div>
+                            <h5>Notifications</h5>
+                            <p>Gérez les notifications que vous recevez.</p>
+                        </div>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <h6>Notifications par email</h6>
+                                <p>Recevoir les notifications importantes par email</p>
+                            </div>
+                            <label class="custom-switch">
+                                <input type="checkbox" name="email_notifications" {{ settings.email_notifications ? 'checked' : '' }}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <h6>Nouvelles demandes chevalier</h6>
+                                <p>Être notifié quand un nouveau chevalier fait une demande</p>
+                            </div>
+                            <label class="custom-switch">
+                                <input type="checkbox" name="new_chevalier_notification" {{ settings.new_chevalier_notification ? 'checked' : '' }}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <h6>Nouvelles courses</h6>
+                                <p>Être notifié quand une nouvelle course est créée</p>
+                            </div>
+                            <label class="custom-switch">
+                                <input type="checkbox" name="new_course_notification" {{ settings.new_course_notification ? 'checked' : '' }}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-coursia">
+                                <i class="bi bi-check2 me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Maintenance -->
+        <div id="section-maintenance" class="settings-section" style="display: none;">
+            <form method="POST" action="{{ path('admin_settings') }}">
+                <input type="hidden" name="action" value="update_maintenance">
+                <div class="settings-card card">
+                    <div class="settings-card-header">
+                        <div>
+                            <i class="bi bi-tools"></i>
+                        </div>
+                        <div>
+                            <h5>Mode maintenance</h5>
+                            <p>Activez le mode maintenance pour empêcher l'accès à la plateforme.</p>
+                        </div>
+                    </div>
+                    <div class="settings-card-body">
+                        {% if settings.maintenance_mode %}
+                        <div class="maintenance-warning">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <p><strong>Le mode maintenance est actuellement activé.</strong> Les utilisateurs ne peuvent pas accéder à la plateforme.</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <h6>Activer le mode maintenance</h6>
+                                <p>La plateforme sera inaccessible pour les utilisateurs pendant la maintenance</p>
+                            </div>
+                            <label class="custom-switch">
+                                <input type="checkbox" name="maintenance_mode" {{ settings.maintenance_mode ? 'checked' : '' }}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-coursia">
+                                <i class="bi bi-check2 me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showSection(sectionId, el) {
+        // Masquer toutes les sections
+        document.querySelectorAll('.settings-section').forEach(s => s.style.display = 'none');
+        // Afficher la section sélectionnée
+        document.getElementById('section-' + sectionId).style.display = 'block';
+        // Mettre à jour la navigation
+        document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
+</script>
+{% endblock %}

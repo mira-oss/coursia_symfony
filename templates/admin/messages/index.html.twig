@@ -1,0 +1,60 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Conversations - Coursia Admin{% endblock %}
+{% block page_title %}Conversations{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-chat-dots"></i> Liste des conversations ({{ conversations|length }})
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Participants</th>
+                    <th>Course liee</th>
+                    <th>Messages</th>
+                    <th>Dernier message</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conv in conversations %}
+                <tr>
+                    <td>#{{ conv.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary">{{ conv.participant1.firstName }}</span>
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span class="badge bg-success">{{ conv.participant2.firstName }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if conv.course %}
+                            <a href="{{ path('admin_courses_show', {id: conv.course.id}) }}">#{{ conv.course.id }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ conv.messages|length }}</td>
+                    <td>
+                        {% if conv.messages|length > 0 %}
+                            {{ conv.messages|last.content|slice(0,30) }}{% if conv.messages|last.content|length > 30 %}...{% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ conv.createdAt|date('d/m/Y H:i') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Aucune conversation</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

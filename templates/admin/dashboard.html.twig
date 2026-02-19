@@ -1,0 +1,377 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Dashboard - Coursia Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Donut Chart */
+    .donut-chart {
+        position: relative;
+        width: 180px;
+        height: 180px;
+    }
+
+    .donut-chart svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .donut-chart circle {
+        fill: none;
+        stroke-width: 25;
+    }
+
+    .donut-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .donut-center small {
+        color: #9CA3AF;
+        font-size: 12px;
+    }
+
+    .donut-center h2 {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--coursia-dark);
+        margin: 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .legend-text {
+        flex: 1;
+        font-size: 13px;
+        color: #6B7280;
+    }
+
+    .legend-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--coursia-dark);
+    }
+
+    .amount-cell {
+        color: var(--coursia-orange);
+        font-weight: 600;
+    }
+
+    /* Dark mode fixes for dashboard */
+    [data-theme="dark"] .donut-center h2 {
+        color: #F9FAFB !important;
+    }
+
+    [data-theme="dark"] .donut-center small {
+        color: #9CA3AF !important;
+    }
+
+    [data-theme="dark"] .legend-text {
+        color: #E5E7EB !important;
+    }
+
+    [data-theme="dark"] .legend-value {
+        color: #F9FAFB !important;
+    }
+
+    [data-theme="dark"] .table td,
+    [data-theme="dark"] .table th {
+        color: #E5E7EB !important;
+    }
+
+    [data-theme="dark"] .table td strong {
+        color: #F9FAFB !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <div class="filter-left">
+        <div class="dropdown">
+            <button class="filter-btn dropdown-toggle" type="button" id="periodDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-calendar3"></i>
+                {% if currentPeriod == '7' %}
+                    7 derniers jours
+                {% elseif currentPeriod == '30' %}
+                    30 derniers jours
+                {% elseif currentPeriod == '90' %}
+                    3 derniers mois
+                {% elseif currentPeriod == '365' %}
+                    Cette annee
+                {% else %}
+                    Toutes les periodes
+                {% endif %}
+                <i class="bi bi-chevron-down ms-1"></i>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="periodDropdown">
+                <li><a class="dropdown-item {{ currentPeriod == '7' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '7'}) }}">
+                    <i class="bi bi-calendar-week me-2"></i>7 derniers jours
+                </a></li>
+                <li><a class="dropdown-item {{ currentPeriod == '30' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '30'}) }}">
+                    <i class="bi bi-calendar-month me-2"></i>30 derniers jours
+                </a></li>
+                <li><a class="dropdown-item {{ currentPeriod == '90' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '90'}) }}">
+                    <i class="bi bi-calendar3 me-2"></i>3 derniers mois
+                </a></li>
+                <li><a class="dropdown-item {{ currentPeriod == '365' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '365'}) }}">
+                    <i class="bi bi-calendar-range me-2"></i>Cette annee
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item {{ currentPeriod == 'all' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: 'all'}) }}">
+                    <i class="bi bi-calendar-check me-2"></i>Toutes les periodes
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    <button class="export-btn" onclick="window.print()">
+        <i class="bi bi-download"></i>
+        Exporter PDF
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4 g-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="bi bi-truck"></i>
+            </div>
+            <div class="stat-info">
+                <p>Courses
+                    {% if currentPeriod == '7' %}(7 jours)
+                    {% elseif currentPeriod == '30' %}(30 jours)
+                    {% elseif currentPeriod == '90' %}(3 mois)
+                    {% elseif currentPeriod == '365' %}(1 an)
+                    {% else %}(total)
+                    {% endif %}
+                </p>
+                <h3>{{ stats.periodCourses }} courses</h3>
+                <div class="stat-trend">
+                    <i class="bi bi-box-seam"></i> {{ stats.totalCourses }} au total
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="stat-info">
+                <p>Chevaliers actifs</p>
+                <h3>{{ stats.totalChevaliers }} livreurs</h3>
+                <div class="stat-trend up">
+                    <i class="bi bi-arrow-up"></i> +20% vs mois dernier
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-info">
+                <p>Utilisateurs total</p>
+                <h3>{{ stats.totalUsers }}</h3>
+                <div class="stat-trend up">
+                    <i class="bi bi-arrow-up"></i> +5% vs mois dernier
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Statistics Section -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="section-header">
+                    <h5 class="section-title">Statistiques</h5>
+                    <a href="#" class="section-link">plus ></a>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="d-flex justify-content-center my-4">
+                    <div class="donut-chart">
+                        <svg viewBox="0 0 100 100">
+                            {% set total = stats.totalChevaliers + stats.pendingChevaliers + stats.totalUsers %}
+                            {% set chevalierPercent = total > 0 ? (stats.totalChevaliers / total * 100) : 33 %}
+                            {% set pendingPercent = total > 0 ? (stats.pendingChevaliers / total * 100) : 33 %}
+                            {% set userPercent = total > 0 ? ((stats.totalUsers - stats.totalChevaliers) / total * 100) : 34 %}
+
+                            <!-- Background circle -->
+                            <circle cx="50" cy="50" r="35" stroke="#E5E7EB"></circle>
+
+                            <!-- Chevaliers (orange) -->
+                            <circle cx="50" cy="50" r="35" stroke="#F97316"
+                                stroke-dasharray="{{ chevalierPercent * 2.2 }} 220"
+                                stroke-dashoffset="0"></circle>
+
+                            <!-- Pending (yellow) -->
+                            <circle cx="50" cy="50" r="35" stroke="#FBBF24"
+                                stroke-dasharray="{{ pendingPercent * 2.2 }} 220"
+                                stroke-dashoffset="-{{ chevalierPercent * 2.2 }}"></circle>
+
+                            <!-- Users (green) -->
+                            <circle cx="50" cy="50" r="35" stroke="#10B981"
+                                stroke-dasharray="{{ userPercent * 2.2 }} 220"
+                                stroke-dashoffset="-{{ (chevalierPercent + pendingPercent) * 2.2 }}"></circle>
+                        </svg>
+                        <div class="donut-center">
+                            <small>Total</small>
+                            <h2>{{ stats.totalUsers }}</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="mt-4">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #F97316;"></div>
+                        <span class="legend-text">Chevaliers</span>
+                        <span class="legend-value">{{ stats.totalChevaliers }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #FBBF24;"></div>
+                        <span class="legend-text">En attente</span>
+                        <span class="legend-value">{{ stats.pendingChevaliers }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #10B981;"></div>
+                        <span class="legend-text">Utilisateurs</span>
+                        <span class="legend-value">{{ stats.totalUsers - stats.totalChevaliers }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders History -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="section-header">
+                    <h5 class="section-title">Historique des courses</h5>
+                    <a href="{{ path('admin_courses') }}" class="section-link">plus ></a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>N. Course</th>
+                                <th>Status</th>
+                                <th>Date et Heure</th>
+                                <th>Prix</th>
+                                <th>Info</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in recentCourses %}
+                            <tr>
+                                <td><strong>#{{ course.id }}</strong></td>
+                                <td>
+                                    {% if course.status == 'finished' %}
+                                        <span class="status-badge completed">
+                                            <i class="bi bi-check-circle-fill"></i> Termine
+                                        </span>
+                                    {% elseif course.status == 'created' or course.status == 'accepted' %}
+                                        <span class="status-badge pending">
+                                            <i class="bi bi-clock-fill"></i> En attente
+                                        </span>
+                                    {% elseif course.status == 'cancelled' %}
+                                        <span class="status-badge failed">
+                                            <i class="bi bi-x-circle-fill"></i> Annule
+                                        </span>
+                                    {% elseif course.status == 'started' or course.status == 'delivered' %}
+                                        <span class="status-badge completed">
+                                            <i class="bi bi-arrow-repeat"></i> En cours
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ course.createdAt|date('d/m/Y') }} a {{ course.createdAt|date('H:i') }}</td>
+                                <td class="amount-cell">{{ course.estimatedPrice|default(0) }} FCFA</td>
+                                <td>
+                                    <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="btn btn-sm" style="background: var(--coursia-gray-light); color: #6B7280;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-3 mb-0">Aucune course pour le moment</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Chevaliers Section -->
+{% if pendingRequests|length > 0 %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="section-header mb-3">
+                    <h5 class="section-title">
+                        <i class="bi bi-shield-check me-2 text-warning"></i>
+                        Demandes Chevalier en attente
+                        <span class="badge badge-pending ms-2">{{ stats.pendingChevaliers }}</span>
+                    </h5>
+                    <a href="{{ path('admin_chevaliers_pending') }}" class="section-link">Voir tout ></a>
+                </div>
+
+                <div class="row g-3">
+                    {% for request in pendingRequests %}
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background: var(--coursia-gray-light);">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 15px;">
+                                {{ request.firstName|slice(0,1)|upper }}{{ request.lastName|slice(0,1)|upper }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong style="color: var(--coursia-dark);">{{ request.firstName }} {{ request.lastName }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-{% if request.vehicleType == 'moto' %}bicycle{% else %}car-front{% endif %} me-1"></i>
+                                    {{ request.vehicleType|capitalize }} - {{ request.createdAt|date('d/m/Y') }}
+                                </small>
+                            </div>
+                            <a href="{{ path('admin_chevaliers_review', {id: request.id}) }}" class="btn btn-coursia btn-sm">
+                                Voir
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

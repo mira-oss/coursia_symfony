@@ -1,0 +1,138 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Mon profil - Coursia Admin{% endblock %}
+
+{% block greeting %}Mon profil{% endblock %}
+
+{% block content %}
+{% if error %}
+    <div class="alert alert-danger mb-4">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+    </div>
+{% endif %}
+
+{% if success %}
+    <div class="alert alert-success mb-4">
+        <i class="bi bi-check-circle me-2"></i>{{ success }}
+    </div>
+{% endif %}
+
+<div class="row">
+    <!-- Carte profil -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div style="width: 90px; height: 90px; background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 36px; margin: 0 auto 20px;">
+                    {{ admin.firstName|slice(0,1)|upper }}
+                </div>
+                <h4 style="font-weight: 700; color: var(--coursia-dark); margin-bottom: 4px;">{{ admin.firstName }} {{ admin.lastName }}</h4>
+                <p style="color: var(--coursia-text-muted); margin-bottom: 16px;">{{ admin.email }}</p>
+                <span class="badge" style="background: #FEF3C7; color: #D97706; font-size: 13px; padding: 8px 16px;">
+                    <i class="bi bi-shield-check me-1"></i> Administrateur
+                </span>
+                <hr style="margin: 24px 0; border-color: var(--coursia-gray);">
+                <div class="text-start" style="padding: 0 10px;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-telephone" style="font-size: 18px; color: var(--coursia-text-muted); width: 24px;"></i>
+                        <div>
+                            <small style="color: var(--coursia-text-muted);">Téléphone</small>
+                            <div style="font-weight: 600; color: var(--coursia-dark);">{{ admin.phone }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-envelope" style="font-size: 18px; color: var(--coursia-text-muted); width: 24px;"></i>
+                        <div>
+                            <small style="color: var(--coursia-text-muted);">Email</small>
+                            <div style="font-weight: 600; color: var(--coursia-dark);">{{ admin.email }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-calendar-check" style="font-size: 18px; color: var(--coursia-text-muted); width: 24px;"></i>
+                        <div>
+                            <small style="color: var(--coursia-text-muted);">Membre depuis</small>
+                            <div style="font-weight: 600; color: var(--coursia-dark);">{{ admin.createdAt|date('d/m/Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaires -->
+    <div class="col-lg-8">
+        <!-- Informations personnelles -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 style="font-weight: 700; color: var(--coursia-dark); margin-bottom: 4px;">
+                    <i class="bi bi-person me-2" style="color: var(--coursia-orange);"></i>
+                    Informations personnelles
+                </h5>
+                <p style="color: var(--coursia-text-muted); font-size: 13px; margin-bottom: 24px;">Modifiez vos informations de base.</p>
+
+                <form method="POST" action="{{ path('admin_profile') }}">
+                    <input type="hidden" name="action" value="update_info">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Prénom</label>
+                            <input type="text" name="firstName" class="form-control" value="{{ admin.firstName }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Nom</label>
+                            <input type="text" name="lastName" class="form-control" value="{{ admin.lastName }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ admin.email }}" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$" title="L'adresse email doit être au format identifiant@gmail.com" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Téléphone</label>
+                            <input type="text" name="phone" class="form-control" value="{{ admin.phone }}" required>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-coursia">
+                            <i class="bi bi-check2 me-1"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modifier le mot de passe -->
+        <div class="card">
+            <div class="card-body">
+                <h5 style="font-weight: 700; color: var(--coursia-dark); margin-bottom: 4px;">
+                    <i class="bi bi-lock me-2" style="color: var(--coursia-orange);"></i>
+                    Modifier le mot de passe
+                </h5>
+                <p style="color: var(--coursia-text-muted); font-size: 13px; margin-bottom: 24px;">Pour votre sécurité, choisissez un mot de passe fort.</p>
+
+                <form method="POST" action="{{ path('admin_profile') }}">
+                    <input type="hidden" name="action" value="update_password">
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Mot de passe actuel</label>
+                        <input type="password" name="currentPassword" class="form-control" placeholder="Entrez votre mot de passe actuel" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Nouveau mot de passe</label>
+                            <input type="password" name="newPassword" class="form-control" placeholder="Minimum 6 caractères" required minlength="6">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Confirmer le nouveau mot de passe</label>
+                            <input type="password" name="confirmPassword" class="form-control" placeholder="Confirmez le mot de passe" required minlength="6">
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-coursia">
+                            <i class="bi bi-shield-lock me-1"></i> Modifier le mot de passe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

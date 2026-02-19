@@ -1,0 +1,119 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Courses - Coursia Admin{% endblock %}
+{% block page_title %}Courses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Liste des courses ({{ courses|length }})</span>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" style="width: auto;" id="statusFilter">
+                <option value="">Tous les statuts</option>
+                <option value="created" {{ app.request.get('status') == 'created' ? 'selected' : '' }}>Cree</option>
+                <option value="accepted" {{ app.request.get('status') == 'accepted' ? 'selected' : '' }}>Accepte</option>
+                <option value="started" {{ app.request.get('status') == 'started' ? 'selected' : '' }}>En cours</option>
+                <option value="delivered" {{ app.request.get('status') == 'delivered' ? 'selected' : '' }}>Livre</option>
+                <option value="finished" {{ app.request.get('status') == 'finished' ? 'selected' : '' }}>Termine</option>
+                <option value="cancelled" {{ app.request.get('status') == 'cancelled' ? 'selected' : '' }}>Annule</option>
+            </select>
+            <select class="form-select form-select-sm" style="width: auto;" id="typeFilter">
+                <option value="">Tous les types</option>
+                <option value="regional" {{ app.request.get('type') == 'regional' ? 'selected' : '' }}>Regional</option>
+                <option value="national" {{ app.request.get('type') == 'national' ? 'selected' : '' }}>National</option>
+                <option value="international" {{ app.request.get('type') == 'international' ? 'selected' : '' }}>International</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Trajet</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Elu</th>
+                    <th>Chevalier</th>
+                    <th>Prix</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>#{{ course.id }}</td>
+                    <td>{{ course.title|slice(0,20) }}{% if course.title|length > 20 %}...{% endif %}</td>
+                    <td>
+                        <small>
+                            <i class="bi bi-geo-alt text-success"></i> {{ course.departureAddress|slice(0,15) }}...
+                            <br>
+                            <i class="bi bi-geo-alt-fill text-danger"></i> {{ course.deliveryAddress|slice(0,15) }}...
+                        </small>
+                    </td>
+                    <td>
+                        {% if course.type == 'regional' %}
+                            <span class="badge bg-info">Regional</span>
+                        {% elseif course.type == 'national' %}
+                            <span class="badge bg-primary">National</span>
+                        {% else %}
+                            <span class="badge bg-dark">International</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if course.status == 'created' %}
+                            <span class="badge bg-secondary">Cree</span>
+                        {% elseif course.status == 'accepted' %}
+                            <span class="badge bg-info">Accepte</span>
+                        {% elseif course.status == 'started' %}
+                            <span class="badge bg-primary">En cours</span>
+                        {% elseif course.status == 'delivered' %}
+                            <span class="badge bg-warning">Livre</span>
+                        {% elseif course.status == 'finished' %}
+                            <span class="badge bg-success">Termine</span>
+                        {% elseif course.status == 'cancelled' %}
+                            <span class="badge bg-danger">Annule</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ course.createdBy.firstName }}</td>
+                    <td>{{ course.acceptedBy ? course.acceptedBy.firstName : '-' }}</td>
+                    <td>{{ course.price ? course.price ~ ' FCFA' : '-' }}</td>
+                    <td>{{ course.createdAt|date('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted">Aucune course</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.getElementById('statusFilter').addEventListener('change', function() {
+    updateFilters();
+});
+document.getElementById('typeFilter').addEventListener('change', function() {
+    updateFilters();
+});
+
+function updateFilters() {
+    const status = document.getElementById('statusFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    let url = '{{ path('admin_courses') }}';
+    const params = [];
+    if (status) params.push('status=' + status);
+    if (type) params.push('type=' + type);
+    if (params.length > 0) url += '?' + params.join('&');
+    window.location.href = url;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Examiner demande #{{ request.id }} - Coursia Admin{% endblock %}
+{% block page_title %}Examiner la demande Chevalier #{{ request.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Colonne gauche: Informations personnelles + Identite -->
+    <div class="col-md-4">
+        <!-- Informations personnelles -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-person"></i> Informations personnelles
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ request.firstName|slice(0,1)|upper }}{{ request.lastName|slice(0,1)|upper }}
+                    </div>
+                    <h5 class="mt-2">{{ request.firstName }} {{ request.lastName }}</h5>
+                </div>
+
+                <table class="table table-sm">
+                    <tr>
+                        <td><i class="bi bi-envelope text-muted"></i></td>
+                        <td>{{ request.email }}</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-phone text-muted"></i></td>
+                        <td>{{ request.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-flag text-muted"></i></td>
+                        <td>{{ request.nationality }}</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-geo-alt text-muted"></i></td>
+                        <td>{{ request.city ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-calendar text-muted"></i></td>
+                        <td>{{ request.createdAt|date('d/m/Y H:i') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Informations d'identite (NPI/CIP) -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-card-heading"></i> Identite (CIP)
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>NPI</strong></td>
+                        <td><span class="badge bg-primary fs-6">{{ request.npi }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Adresse</strong></td>
+                        <td>{{ request.residenceAddress }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contact d'urgence -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-telephone-fill"></i> Contact d'urgence
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>{{ request.emergencyContactName }}</strong></p>
+                <p class="mb-0"><i class="bi bi-phone"></i> {{ request.emergencyContactPhone }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonne centrale: Vehicule -->
+    <div class="col-md-4">
+        <!-- Informations vehicule -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-{% if request.vehicleType == 'moto' %}bicycle{% else %}car-front{% endif %}"></i>
+                Vehicule: {{ request.vehicleType|upper }}
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Matricule</strong></td>
+                        <td><span class="badge bg-dark fs-6">{{ request.vehicleRegistration }}</span></td>
+                    </tr>
+                    {% if request.vehicleType == 'voiture' and request.vehicleCardNumber %}
+                    <tr>
+                        <td><strong>Carte grise</strong></td>
+                        <td>{{ request.vehicleCardNumber }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if request.vehicleBrand %}
+                    <tr>
+                        <td><strong>Marque</strong></td>
+                        <td>{{ request.vehicleBrand }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if request.vehicleModel %}
+                    <tr>
+                        <td><strong>Modele</strong></td>
+                        <td>{{ request.vehicleModel }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if request.vehicleColor %}
+                    <tr>
+                        <td><strong>Couleur</strong></td>
+                        <td>
+                            <span class="badge" style="background-color: {{ request.vehicleColor }}; color: {% if request.vehicleColor in ['blanc', 'white', 'jaune', 'yellow'] %}#000{% else %}#fff{% endif %}">
+                                {{ request.vehicleColor }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+
+                <!-- Documents du vehicule -->
+                <hr>
+                <p class="mb-2"><strong><i class="bi bi-file-earmark-pdf"></i> Documents du vehicule:</strong></p>
+                {% if request.vehicleDocumentsPath %}
+                    <a href="{{ request.vehicleDocumentsPath }}" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> Voir les documents
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning py-2 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Documents non fournis
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Message du demandeur -->
+        {% if request.message %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-chat-quote"></i> Message du demandeur
+            </div>
+            <div class="card-body">
+                <p class="mb-0 fst-italic">"{{ request.message }}"</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Colonne droite: Photos + Decision -->
+    <div class="col-md-4">
+        <!-- Photos de verification -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning">
+                <i class="bi bi-camera"></i> Photos de verification
+            </div>
+            <div class="card-body">
+                <!-- Selfie -->
+                <p class="mb-2"><strong>Selfie du visage:</strong></p>
+                {% if request.selfiePath %}
+                    <img src="{{ request.selfiePath }}" alt="Selfie" class="img-fluid img-thumbnail mb-3" style="max-height: 200px;">
+                {% else %}
+                    <div class="alert alert-danger py-2 mb-3">
+                        <i class="bi bi-x-circle"></i> Selfie NON FOURNI
+                    </div>
+                {% endif %}
+
+                <!-- Selfie avec CIP -->
+                <p class="mb-2"><strong>Selfie avec CIP en main:</strong></p>
+                {% if request.selfieWithCipPath %}
+                    <img src="{{ request.selfieWithCipPath }}" alt="Selfie avec CIP" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                {% else %}
+                    <div class="alert alert-danger py-2 mb-0">
+                        <i class="bi bi-x-circle"></i> Selfie avec CIP NON FOURNI
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Decision -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <i class="bi bi-check-circle"></i> Decision
+            </div>
+            <div class="card-body">
+                <!-- Bouton Approuver -->
+                <form action="{{ path('admin_chevaliers_approve', {id: request.id}) }}" method="POST" class="mb-3">
+                    <button type="submit" class="btn btn-success btn-lg w-100" onclick="return confirm('Approuver cette demande et creer le compte Chevalier ?')">
+                        <i class="bi bi-check-lg"></i> Approuver
+                    </button>
+                    <small class="text-muted d-block mt-1">Un email avec les identifiants sera envoye.</small>
+                </form>
+
+                <hr>
+
+                <!-- Bouton Rejeter -->
+                <form action="{{ path('admin_chevaliers_reject', {id: request.id}) }}" method="POST">
+                    <div class="mb-2">
+                        <textarea name="reason" class="form-control" rows="2" placeholder="Raison du refus (sera envoyee par email)"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Refuser cette demande ?')">
+                        <i class="bi bi-x-lg"></i> Refuser
+                    </button>
+                </form>
+
+                <hr>
+
+                <a href="{{ path('admin_chevaliers_pending') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left"></i> Retour a la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
