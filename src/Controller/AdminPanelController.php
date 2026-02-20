@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\Course;
 use App\Entity\Conversation;
 use App\Entity\ChevalierRequest;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,13 +20,16 @@ class AdminPanelController extends AbstractController
 {
     private EntityManagerInterface $em;
     private UserPasswordHasherInterface $passwordHasher;
+    private SmsService $smsService;
 
     public function __construct(
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        SmsService $smsService
     ) {
         $this->em = $em;
         $this->passwordHasher = $passwordHasher;
+        $this->smsService = $smsService;
     }
 
     // ================= INSCRIPTION (Nouvel admin) =================
@@ -487,11 +491,81 @@ class AdminPanelController extends AbstractController
             throw $this->createNotFoundException('Course non trouvée');
         }
 
+        // Liste des chevaliers pour l'assignation (courses régionales)
+        $chevaliers = $this->em->getRepository(User::class)->findBy(
+            ['role' => 'chevalier'],
+            ['firstName' => 'ASC']
+        );
+
         return $this->render('admin/courses/show.html.twig', [
             'admin' => $admin,
             'course' => $course,
+            'chevaliers' => $chevaliers,
             'pending_chevaliers_count' => $this->getPendingChevalierCount()
         ]);
+    }
+
+    #[Route('/courses/{id}/assign', name: 'admin_courses_assign', methods: ['POST'])]
+    public function assignChevalier(int $id, Request $request, SessionInterface $session): Response
+    {
+        $admin = $this->getAdmin($session);
+        if (!$admin) {
+            return $this->redirectToRoute('admin_login');
+        }
+
+        $course = $this->em->getRepository(Course::class)->find($id);
+
+        if (!$course) {
+            throw $this->createNotFoundException('Course non trouvée');
+        }
+
+        if ($course->getType() !== 'regional') {
+            $this->addFlash('error', 'Cette action est réservée aux courses régionales');
+            return $this->redirectToRoute('admin_courses_show', ['id' => $id]);
+        }
+
+        if ($course->getStatus() !== 'created') {
+            $this->addFlash('error', 'Cette course a déjà été traitée');
+            return $this->redirectToRoute('admin_courses_show', ['id' => $id]);
+        }
+
+        $chevalierIdRaw = $request->request->get('chevalier_id');
+        if (empty($chevalierIdRaw)) {
+            $this->addFlash('error', 'Veuillez sélectionner un Chevalier');
+            return $this->redirectToRoute('admin_courses_show', ['id' => $id]);
+        }
+
+        $chevalier = $this->em->getRepository(User::class)->find((int) $chevalierIdRaw);
+
+        if (!$chevalier || $chevalier->getRole() !== 'chevalier') {
+            $this->addFlash('error', 'Chevalier invalide');
+            return $this->redirectToRoute('admin_courses_show', ['id' => $id]);
+        }
+
+        // Assigner le Chevalier et mettre à jour le statut
+        $course->setAcceptedBy($chevalier);
+        $course->setStatus('accepted');
+
+        // Générer le token de livraison
+        $course->generateDeliveryToken();
+
+        $this->em->flush();
+
+        // Envoyer le SMS de confirmation au destinataire
+        $smsSent = $this->smsService->sendDeliveryConfirmationLink(
+            $course->getRecipientPhone(),
+            $course->getRecipientFirstName(),
+            $course->getCreatedBy()->getFirstName() . ' ' . $course->getCreatedBy()->getLastName(),
+            $course->getDeliveryToken()
+        );
+
+        if ($smsSent) {
+            $this->addFlash('success', 'Chevalier assigné et SMS envoyé au destinataire avec succès');
+        } else {
+            $this->addFlash('warning', 'Chevalier assigné mais l\'envoi du SMS a échoué. Vérifiez les logs.');
+        }
+
+        return $this->redirectToRoute('admin_courses_show', ['id' => $id]);
     }
 
     // ================= CONVERSATIONS =================

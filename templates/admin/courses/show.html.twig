@@ -49,7 +49,7 @@
                 {% endif %}
 
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <h6 class="text-muted">Type</h6>
                         <p>
                             {% if course.type == 'regional' %}
@@ -61,19 +61,30 @@
                             {% endif %}
                         </p>
                     </div>
-                    <div class="col-md-3">
-                        <h6 class="text-muted">Prix</h6>
-                        <p>{{ course.price ? course.price ~ ' FCFA' : 'Non defini' }}</p>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Poids du colis</h6>
+                        <p>{{ course.packageWeight ? course.packageWeight ~ ' kg' : 'Non specifie' }}</p>
                     </div>
-                    <div class="col-md-3">
-                        <h6 class="text-muted">Poids</h6>
-                        <p>{{ course.packageWeight ?? 'Non specifie' }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <h6 class="text-muted">Negociable</h6>
-                        <p>{{ course.isNegotiable ? 'Oui' : 'Non' }}</p>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Type de colis</h6>
+                        <p>{{ course.packageType ?? 'Non specifie' }}</p>
                     </div>
                 </div>
+
+                <!-- Informations destinataire -->
+                {% if course.recipientFirstName or course.recipientPhone %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-muted">Destinataire</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <p><i class="bi bi-person"></i> {{ course.recipientFirstName }} {{ course.recipientLastName }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><i class="bi bi-telephone"></i> {{ course.recipientPhone }}</p>
+                    </div>
+                </div>
+                {% endif %}
 
                 {% if course.deliveryDateStart %}
                 <div class="row mt-3">
@@ -173,8 +184,49 @@
                 {% else %}
                 <p class="text-muted text-center mb-0">Aucun chevalier assigne</p>
                 {% endif %}
+
+                {# Formulaire d'assignation pour les courses régionales en attente #}
+                {% if course.type == 'regional' and course.status == 'created' %}
+                <hr>
+                <form method="POST" action="{{ path('admin_courses_assign', {id: course.id}) }}">
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Assigner un Chevalier</label>
+                        <select name="chevalier_id" class="form-select form-select-sm" required>
+                            <option value="">-- Sélectionner --</option>
+                            {% for chevalier in chevaliers %}
+                                <option value="{{ chevalier.id }}">
+                                    {{ chevalier.firstName }} {{ chevalier.lastName }} ({{ chevalier.phone }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-success w-100">
+                        <i class="bi bi-send"></i> Assigner et envoyer SMS
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
+
+        {# Bloc SMS pour courses régionales déjà assignées #}
+        {% if course.type == 'regional' and course.deliveryToken %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-chat-dots"></i> Confirmation SMS
+            </div>
+            <div class="card-body">
+                {% if course.deliveryConfirmedAt %}
+                    <span class="badge bg-success mb-2">Livraison confirmée</span>
+                    <p class="small text-muted mb-0">
+                        Confirmé le {{ course.deliveryConfirmedAt|date('d/m/Y à H:i') }}
+                    </p>
+                {% else %}
+                    <span class="badge bg-warning text-dark mb-2">En attente de confirmation</span>
+                    <p class="small text-muted mb-0">Le SMS a été envoyé au destinataire.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Timeline -->
         <div class="card">

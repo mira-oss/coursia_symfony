@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity;
+
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -50,48 +51,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private bool $isVerified = false;
 
     #[ORM\Column(type: "string", length: 50, nullable: true)]
-    private ?string $idCardNumber = null; // NPI (Numero d'Identification Personnel)
+    private ?string $idCardNumber = null;
 
-    #[ORM\Column(type: "text", nullable: true)]
-    private ?string $residenceAddress = null;
-
-    #[ORM\Column(type: "string", length: 100, nullable: true)]
-    private ?string $emergencyContactName = null;
-
-    #[ORM\Column(type: "string", length: 50, nullable: true)]
-    private ?string $emergencyContactPhone = null;
-
-    // ===== CHAMPS VEHICULE (pour Chevaliers) =====
-    #[ORM\Column(type: "string", length: 20, nullable: true)]
-    private ?string $vehicleType = null; // 'moto' ou 'voiture'
-
-    #[ORM\Column(type: "string", length: 50, nullable: true)]
-    private ?string $vehicleRegistration = null; // Numero matricule
-
-    #[ORM\Column(type: "string", length: 50, nullable: true)]
-    private ?string $vehicleCardNumber = null; // Carte grise (voiture)
-
-    #[ORM\Column(type: "string", length: 100, nullable: true)]
-    private ?string $vehicleBrand = null;
-
-    #[ORM\Column(type: "string", length: 100, nullable: true)]
-    private ?string $vehicleModel = null;
-
-    #[ORM\Column(type: "string", length: 50, nullable: true)]
-    private ?string $vehicleColor = null;
-
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
-    private ?string $vehicleDocumentsPath = null;
-
-    // ===== PHOTOS DE VERIFICATION =====
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $idCardPhotoPath = null;
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
-    private ?string $selfiePath = null; // Selfie du visage
-
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
-    private ?string $selfieWithIdPath = null; // Selfie avec CIP en main
+    private ?string $selfieWithIdPath = null;
 
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?\DateTimeImmutable $verifiedAt = null;
@@ -99,9 +65,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $verifiedBy = null;
-
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
-    private ?string $avatar = null;
 
     public function __construct()
     {
@@ -306,166 +269,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->verifiedBy = $verifiedBy;
         return $this;
-    }
-
-    public function getAvatar(): ?string
-    {
-        return $this->avatar;
-    }
-
-    public function setAvatar(?string $avatar): static
-    {
-        $this->avatar = $avatar;
-        return $this;
-    }
-
-    // ================= RESIDENCE & CONTACT D'URGENCE =================
-
-    public function getResidenceAddress(): ?string
-    {
-        return $this->residenceAddress;
-    }
-
-    public function setResidenceAddress(?string $residenceAddress): static
-    {
-        $this->residenceAddress = $residenceAddress;
-        return $this;
-    }
-
-    public function getEmergencyContactName(): ?string
-    {
-        return $this->emergencyContactName;
-    }
-
-    public function setEmergencyContactName(?string $emergencyContactName): static
-    {
-        $this->emergencyContactName = $emergencyContactName;
-        return $this;
-    }
-
-    public function getEmergencyContactPhone(): ?string
-    {
-        return $this->emergencyContactPhone;
-    }
-
-    public function setEmergencyContactPhone(?string $emergencyContactPhone): static
-    {
-        $this->emergencyContactPhone = $emergencyContactPhone;
-        return $this;
-    }
-
-    // ================= VEHICULE =================
-
-    public function getVehicleType(): ?string
-    {
-        return $this->vehicleType;
-    }
-
-    public function setVehicleType(?string $vehicleType): static
-    {
-        $this->vehicleType = $vehicleType;
-        return $this;
-    }
-
-    public function getVehicleRegistration(): ?string
-    {
-        return $this->vehicleRegistration;
-    }
-
-    public function setVehicleRegistration(?string $vehicleRegistration): static
-    {
-        $this->vehicleRegistration = $vehicleRegistration;
-        return $this;
-    }
-
-    public function getVehicleCardNumber(): ?string
-    {
-        return $this->vehicleCardNumber;
-    }
-
-    public function setVehicleCardNumber(?string $vehicleCardNumber): static
-    {
-        $this->vehicleCardNumber = $vehicleCardNumber;
-        return $this;
-    }
-
-    public function getVehicleBrand(): ?string
-    {
-        return $this->vehicleBrand;
-    }
-
-    public function setVehicleBrand(?string $vehicleBrand): static
-    {
-        $this->vehicleBrand = $vehicleBrand;
-        return $this;
-    }
-
-    public function getVehicleModel(): ?string
-    {
-        return $this->vehicleModel;
-    }
-
-    public function setVehicleModel(?string $vehicleModel): static
-    {
-        $this->vehicleModel = $vehicleModel;
-        return $this;
-    }
-
-    public function getVehicleColor(): ?string
-    {
-        return $this->vehicleColor;
-    }
-
-    public function setVehicleColor(?string $vehicleColor): static
-    {
-        $this->vehicleColor = $vehicleColor;
-        return $this;
-    }
-
-    public function getVehicleDocumentsPath(): ?string
-    {
-        return $this->vehicleDocumentsPath;
-    }
-
-    public function setVehicleDocumentsPath(?string $vehicleDocumentsPath): static
-    {
-        $this->vehicleDocumentsPath = $vehicleDocumentsPath;
-        return $this;
-    }
-
-    public function getSelfiePath(): ?string
-    {
-        return $this->selfiePath;
-    }
-
-    public function setSelfiePath(?string $selfiePath): static
-    {
-        $this->selfiePath = $selfiePath;
-        return $this;
-    }
-
-    // ================= HELPER METHODS =================
-
-    public function getFullName(): string
-    {
-        return $this->firstName . ' ' . $this->lastName;
-    }
-
-    public function getVehicleDescription(): string
-    {
-        if (!$this->vehicleType) {
-            return 'Non defini';
-        }
-        $desc = ucfirst($this->vehicleType);
-        if ($this->vehicleBrand) {
-            $desc .= ' ' . $this->vehicleBrand;
-        }
-        if ($this->vehicleModel) {
-            $desc .= ' ' . $this->vehicleModel;
-        }
-        if ($this->vehicleColor) {
-            $desc .= ' (' . $this->vehicleColor . ')';
-        }
-        return $desc;
     }
 }
