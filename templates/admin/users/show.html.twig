@@ -55,6 +55,14 @@
                             <i class="bi bi-play-circle"></i> Activer
                         </a>
                     {% endif %}
+                    {% if user.role != 'admin' %}
+                        <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}"
+                              onsubmit="return confirm('Supprimer définitivement {{ user.firstName }} {{ user.lastName }} ? Cette action est irréversible.')">
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="bi bi-trash"></i> Supprimer l'utilisateur
+                            </button>
+                        </form>
+                    {% endif %}
                     <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Retour
                     </a>
@@ -123,11 +131,11 @@
                 <p><strong>Numero CNI:</strong> {{ user.idCardNumber ?? 'Non fourni' }}</p>
                 {% if user.idCardPhotoPath %}
                     <p><strong>Photo CNI:</strong></p>
-                    <img src="{{ asset('uploads/' ~ user.idCardPhotoPath) }}" alt="CNI" class="img-thumbnail mb-2" style="max-width: 300px;">
+                    <img src="/uploads/{{ user.idCardPhotoPath }}" alt="CNI" class="img-thumbnail mb-2" style="max-width: 300px;">
                 {% endif %}
                 {% if user.selfieWithIdPath %}
                     <p><strong>Selfie avec CNI:</strong></p>
-                    <img src="{{ asset('uploads/' ~ user.selfieWithIdPath) }}" alt="Selfie" class="img-thumbnail" style="max-width: 300px;">
+                    <img src="/uploads/{{ user.selfieWithIdPath }}" alt="Selfie" class="img-thumbnail" style="max-width: 300px;">
                 {% endif %}
                 {% if user.verifiedAt %}
                     <hr>

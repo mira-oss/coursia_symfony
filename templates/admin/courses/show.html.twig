@@ -104,7 +104,7 @@
                     <h6 class="text-muted">Photos du colis</h6>
                     <div class="d-flex gap-2 flex-wrap">
                         {% for photo in course.photos %}
-                            <img src="{{ asset('uploads/courses/' ~ photo) }}" alt="Photo" class="img-thumbnail" style="max-width: 150px;">
+                            <img src="/uploads/courses/{{ photo }}" alt="Photo" class="img-thumbnail" style="max-width: 150px;">
                         {% endfor %}
                     </div>
                 </div>

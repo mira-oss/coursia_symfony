@@ -32,40 +32,54 @@
                                 <td><i class="bi bi-phone text-muted"></i></td>
                                 <td>{{ request.phone }}</td>
                             </tr>
+                            {% if request.requestType == 'national' %}
                             <tr>
                                 <td><i class="bi bi-card-heading text-muted"></i></td>
-                                <td>NPI: <strong>{{ request.npi }}</strong></td>
+                                <td>CIP: <strong>{{ request.idCardNumber ?? 'Non renseigné' }}</strong></td>
                             </tr>
                             <tr>
-                                <td><i class="bi bi-{% if request.vehicleType == 'moto' %}bicycle{% else %}car-front{% endif %} text-muted"></i></td>
+                                <td><i class="bi bi-bicycle text-muted"></i></td>
                                 <td>
-                                    {{ request.vehicleType|upper }}
-                                    <span class="badge bg-dark">{{ request.vehicleRegistration }}</span>
+                                    {{ request.vehicleType ? request.vehicleType|upper : '-' }}
+                                    {% if request.vehicleRegistration %}
+                                        <span class="badge bg-dark">{{ request.vehicleRegistration }}</span>
+                                    {% endif %}
                                 </td>
                             </tr>
+                            {% else %}
+                            <tr>
+                                <td><i class="bi bi-passport text-muted"></i></td>
+                                <td>Passeport: <strong>{{ request.passportNumber ?? 'Non renseigné' }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-globe text-muted"></i></td>
+                                <td>Destination: <strong>{{ request.destinationCountry ?? '-' }}</strong></td>
+                            </tr>
+                            {% endif %}
                             <tr>
                                 <td><i class="bi bi-geo-alt text-muted"></i></td>
-                                <td>{{ request.city ?? request.nationality }}</td>
+                                <td>{{ request.residenceAddress ?? request.city ?? request.nationality }}</td>
                             </tr>
                         </table>
 
                         <div class="d-flex gap-2 mb-3">
-                            {% if request.selfiePath %}
-                                <span class="badge bg-success"><i class="bi bi-check"></i> Selfie</span>
-                            {% else %}
-                                <span class="badge bg-danger"><i class="bi bi-x"></i> Selfie</span>
-                            {% endif %}
-
-                            {% if request.selfieWithCipPath %}
+                            <span class="badge bg-{{ request.requestType == 'national' ? 'primary' : 'info' }}">
+                                {{ request.requestType|upper }}
+                            </span>
+                            {% if request.cipPath %}
                                 <span class="badge bg-success"><i class="bi bi-check"></i> CIP</span>
-                            {% else %}
-                                <span class="badge bg-danger"><i class="bi bi-x"></i> CIP</span>
                             {% endif %}
-
-                            {% if request.vehicleDocumentsPath %}
-                                <span class="badge bg-success"><i class="bi bi-check"></i> Docs</span>
-                            {% else %}
-                                <span class="badge bg-secondary"><i class="bi bi-dash"></i> Docs</span>
+                            {% if request.carteGrisePath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Carte grise</span>
+                            {% endif %}
+                            {% if request.passportPath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Passeport</span>
+                            {% endif %}
+                            {% if request.visaPath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Visa</span>
+                            {% endif %}
+                            {% if request.billetAvionPath %}
+                                <span class="badge bg-success"><i class="bi bi-check"></i> Billet</span>
                             {% endif %}
                         </div>
 

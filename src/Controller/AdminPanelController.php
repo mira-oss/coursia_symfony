@@ -288,6 +288,61 @@ class AdminPanelController extends AbstractController
         return $this->redirectToRoute('admin_users_show', ['id' => $id]);
     }
 
+    #[Route('/users/{id}/delete', name: 'admin_users_delete', methods: ['POST'])]
+    public function deleteUser(int $id, SessionInterface $session): Response
+    {
+        $admin = $this->getAdmin($session);
+        if (!$admin) {
+            return $this->redirectToRoute('admin_login');
+        }
+
+        $user = $this->em->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur non trouvé');
+        }
+
+        // Sécurité : ne pas supprimer un admin
+        if ($user->getRole() === 'admin') {
+            $this->addFlash('error', 'Impossible de supprimer un compte administrateur');
+            return $this->redirectToRoute('admin_users_show', ['id' => $id]);
+        }
+
+        $conn = $this->em->getConnection();
+
+        // 1. Nullifier les FKs optionnelles sur cet user
+        $conn->executeStatement('UPDATE courses SET accepted_by_id = NULL WHERE accepted_by_id = :id', ['id' => $id]);
+        $conn->executeStatement('UPDATE chevalier_requests SET processed_by_id = NULL WHERE processed_by_id = :id', ['id' => $id]);
+        $conn->executeStatement('UPDATE "user" SET verified_by_id = NULL WHERE verified_by_id = :id', ['id' => $id]);
+
+        // 2. Supprimer les messages envoyés par cet user
+        $conn->executeStatement('DELETE FROM messages WHERE sender_id = :id', ['id' => $id]);
+
+        // 3. Supprimer les messages restants dans ses conversations
+        $conn->executeStatement('DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE participant1_id = :id OR participant2_id = :id)', ['id' => $id]);
+
+        // 4. Supprimer ses conversations
+        $conn->executeStatement('DELETE FROM conversations WHERE participant1_id = :id OR participant2_id = :id', ['id' => $id]);
+
+        // 5. Supprimer course_offers, journeys, travel_announcements liés
+        $conn->executeStatement('DELETE FROM course_offers WHERE chevalier_id = :id', ['id' => $id]);
+        $conn->executeStatement('DELETE FROM journeys WHERE chevalier_id = :id', ['id' => $id]);
+        $conn->executeStatement('DELETE FROM travel_announcements WHERE chevalier_id = :id', ['id' => $id]);
+
+        // 6. Supprimer les courses créées par cet user
+        $conn->executeStatement('DELETE FROM courses WHERE created_by_id = :id', ['id' => $id]);
+
+        // 7. Supprimer les demandes chevalier
+        $conn->executeStatement('DELETE FROM chevalier_requests WHERE requesting_user_id = :id OR created_user_id = :id', ['id' => $id]);
+
+        // 8. Supprimer l'user (notifications et password_reset_tokens cascadent automatiquement)
+        $this->em->remove($user);
+        $this->em->flush();
+
+        $this->addFlash('success', 'Utilisateur supprimé avec succès');
+        return $this->redirectToRoute('admin_users');
+    }
+
     // ================= CHEVALIER REQUESTS =================
     #[Route('/chevaliers/pending', name: 'admin_chevaliers_pending')]
     public function pendingChevaliers(SessionInterface $session): Response

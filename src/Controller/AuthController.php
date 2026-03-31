@@ -71,7 +71,12 @@ class AuthController extends AbstractController
 
         $existingUser = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($existingUser) {
-            return $this->json(['error' => 'Email déjà utilisé'], 400);
+            return $this->json(['error' => 'Cet email est déjà associé à un compte'], 400);
+        }
+
+        $existingPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $phone]);
+        if ($existingPhone) {
+            return $this->json(['error' => 'Ce numéro de téléphone est déjà associé à un compte'], 400);
         }
 
         $user = new User();
@@ -101,9 +106,8 @@ class AuthController extends AbstractController
 
     // ================= LOGIN =================
     #[Route('/login', name: 'api_login', methods: ['POST'])]
-    public function login(UserInterface $user): JsonResponse
+    public function login(#[CurrentUser] User $user): JsonResponse
     {
-        // Si JWT bundle est configuré, Symfony injecte automatiquement l'utilisateur
         $token = $this->jwtManager->create($user);
 
         return $this->json([
@@ -220,14 +224,18 @@ class AuthController extends AbstractController
                 ));
 
             $this->mailer->send($emailMessage);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Log l'erreur mais ne pas bloquer l'utilisateur
-            // En production, utiliser un vrai logger
         }
 
-        return $this->json([
-            'message' => 'Si cet email existe, un code de réinitialisation a été envoyé'
-        ]);
+        $response = ['message' => 'Un code de réinitialisation a été envoyé à votre email'];
+
+        // En développement, retourner le code directement (mailer non configuré)
+        if ($_ENV['APP_ENV'] === 'dev') {
+            $response['dev_code'] = $token->getCode();
+        }
+
+        return $this->json($response);
     }
 
     // ================= RESET PASSWORD =================

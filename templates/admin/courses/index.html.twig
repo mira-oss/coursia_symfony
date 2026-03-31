@@ -36,7 +36,6 @@
                     <th>Status</th>
                     <th>Elu</th>
                     <th>Chevalier</th>
-                    <th>Prix</th>
                     <th>Date</th>
                     <th>Actions</th>
                 </tr>
@@ -79,7 +78,6 @@
                     </td>
                     <td>{{ course.createdBy.firstName }}</td>
                     <td>{{ course.acceptedBy ? course.acceptedBy.firstName : '-' }}</td>
-                    <td>{{ course.price ? course.price ~ ' FCFA' : '-' }}</td>
                     <td>{{ course.createdAt|date('d/m/Y') }}</td>
                     <td>
                         <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="btn btn-sm btn-outline-primary">

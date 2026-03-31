@@ -247,18 +247,48 @@ class AdminController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        // Vérifier qu'un utilisateur avec cet email n'existe pas déjà
-        $existingUser = $this->em->getRepository(User::class)
-            ->findOneBy(['email' => $chevalierRequest->getEmail()]);
+        // Cas 1 : L'Élu a déjà un compte → mise à niveau du rôle
+        $existingUser = $chevalierRequest->getRequestingUser()
+            ?? $this->em->getRepository(User::class)->findOneBy(['email' => $chevalierRequest->getEmail()]);
 
         if ($existingUser) {
-            return $this->json(['error' => 'Un compte existe déjà avec cet email'], 400);
+            // Mettre à niveau le rôle
+            $existingUser->setRole('chevalier');
+            $existingUser->setIsVerified(true);
+            $existingUser->setVerifiedAt(new \DateTimeImmutable());
+            $existingUser->setVerifiedBy($admin);
+
+            if (!empty($data['idCardNumber'])) {
+                $existingUser->setIdCardNumber($data['idCardNumber']);
+            }
+
+            $chevalierRequest->setStatus('approved');
+            $chevalierRequest->setProcessedBy($admin);
+            $chevalierRequest->setProcessedAt(new \DateTimeImmutable());
+            $chevalierRequest->setAdminNotes($data['adminNotes'] ?? null);
+
+            try {
+                $this->em->persist($existingUser);
+                $this->em->persist($chevalierRequest);
+                $this->em->flush();
+            } catch (\Exception $e) {
+                return $this->json(['error' => 'Erreur lors de la mise à niveau: ' . $e->getMessage()], 500);
+            }
+
+            return $this->json([
+                'message' => 'Compte mis à niveau en Chevalier avec succès',
+                'chevalier' => [
+                    'id' => $existingUser->getId(),
+                    'email' => $existingUser->getEmail(),
+                    'fullName' => $existingUser->getFirstName() . ' ' . $existingUser->getLastName(),
+                    'isVerified' => true,
+                ]
+            ]);
         }
 
-        // Générer un mot de passe aléatoire
+        // Cas 2 : Nouveau compte Chevalier à créer
         $generatedPassword = bin2hex(random_bytes(8));
 
-        // Créer le compte Chevalier
         $chevalier = new User();
         $chevalier->setEmail($chevalierRequest->getEmail());
         $chevalier->setPassword($this->passwordHasher->hashPassword($chevalier, $generatedPassword));
@@ -271,7 +301,6 @@ class AdminController extends AbstractController
         $chevalier->setVerifiedAt(new \DateTimeImmutable());
         $chevalier->setVerifiedBy($admin);
 
-        // Infos de vérification fournies par l'admin
         if (!empty($data['idCardNumber'])) {
             $chevalier->setIdCardNumber($data['idCardNumber']);
         }
@@ -282,7 +311,6 @@ class AdminController extends AbstractController
             $chevalier->setSelfieWithIdPath($data['selfieWithIdPath']);
         }
 
-        // Mettre à jour la demande
         $chevalierRequest->setStatus('approved');
         $chevalierRequest->setProcessedBy($admin);
         $chevalierRequest->setProcessedAt(new \DateTimeImmutable());
@@ -294,12 +322,9 @@ class AdminController extends AbstractController
             $this->em->persist($chevalierRequest);
             $this->em->flush();
 
-            // Envoyer email avec identifiants
             $this->emailService->sendChevalierWelcomeEmail($chevalier, $generatedPassword);
         } catch (\Exception $e) {
-            return $this->json([
-                'error' => 'Erreur lors de la création du compte: ' . $e->getMessage()
-            ], 500);
+            return $this->json(['error' => 'Erreur lors de la création du compte: ' . $e->getMessage()], 500);
         }
 
         return $this->json([
@@ -372,6 +397,9 @@ class AdminController extends AbstractController
             'nationality' => $request->getNationality(),
             'city' => $request->getCity(),
             'message' => $request->getMessage(),
+            'idCardNumber' => $request->getIdCardNumber(),
+            'vehicleType' => $request->getVehicleType(),
+            'vehicleRegistration' => $request->getVehicleRegistration(),
             'status' => $request->getStatus(),
             'adminNotes' => $request->getAdminNotes(),
             'createdAt' => $request->getCreatedAt()->format('Y-m-d H:i:s'),

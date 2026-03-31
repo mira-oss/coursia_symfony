@@ -5,12 +5,14 @@
 
 {% block content %}
 <div class="row">
-    <!-- Colonne gauche: Informations personnelles + Identite -->
+    <!-- Colonne gauche: Informations personnelles -->
     <div class="col-md-4">
-        <!-- Informations personnelles -->
         <div class="card mb-4">
             <div class="card-header">
                 <i class="bi bi-person"></i> Informations personnelles
+                <span class="badge bg-{{ request.requestType == 'national' ? 'primary' : 'info' }} float-end">
+                    {{ request.requestType|upper }}
+                </span>
             </div>
             <div class="card-body">
                 <div class="text-center mb-3">
@@ -31,34 +33,15 @@
                     </tr>
                     <tr>
                         <td><i class="bi bi-flag text-muted"></i></td>
-                        <td>{{ request.nationality }}</td>
+                        <td>{{ request.nationality ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td><i class="bi bi-geo-alt text-muted"></i></td>
-                        <td>{{ request.city ?? '-' }}</td>
+                        <td>{{ request.residenceAddress ?? request.city ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td><i class="bi bi-calendar text-muted"></i></td>
                         <td>{{ request.createdAt|date('d/m/Y H:i') }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-        <!-- Informations d'identite (NPI/CIP) -->
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <i class="bi bi-card-heading"></i> Identite (CIP)
-            </div>
-            <div class="card-body">
-                <table class="table table-sm">
-                    <tr>
-                        <td><strong>NPI</strong></td>
-                        <td><span class="badge bg-primary fs-6">{{ request.npi }}</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Adresse</strong></td>
-                        <td>{{ request.residenceAddress }}</td>
                     </tr>
                 </table>
             </div>
@@ -70,72 +53,14 @@
                 <i class="bi bi-telephone-fill"></i> Contact d'urgence
             </div>
             <div class="card-body">
-                <p class="mb-1"><strong>{{ request.emergencyContactName }}</strong></p>
-                <p class="mb-0"><i class="bi bi-phone"></i> {{ request.emergencyContactPhone }}</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Colonne centrale: Vehicule -->
-    <div class="col-md-4">
-        <!-- Informations vehicule -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <i class="bi bi-{% if request.vehicleType == 'moto' %}bicycle{% else %}car-front{% endif %}"></i>
-                Vehicule: {{ request.vehicleType|upper }}
-            </div>
-            <div class="card-body">
-                <table class="table table-sm">
-                    <tr>
-                        <td><strong>Matricule</strong></td>
-                        <td><span class="badge bg-dark fs-6">{{ request.vehicleRegistration }}</span></td>
-                    </tr>
-                    {% if request.vehicleType == 'voiture' and request.vehicleCardNumber %}
-                    <tr>
-                        <td><strong>Carte grise</strong></td>
-                        <td>{{ request.vehicleCardNumber }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if request.vehicleBrand %}
-                    <tr>
-                        <td><strong>Marque</strong></td>
-                        <td>{{ request.vehicleBrand }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if request.vehicleModel %}
-                    <tr>
-                        <td><strong>Modele</strong></td>
-                        <td>{{ request.vehicleModel }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if request.vehicleColor %}
-                    <tr>
-                        <td><strong>Couleur</strong></td>
-                        <td>
-                            <span class="badge" style="background-color: {{ request.vehicleColor }}; color: {% if request.vehicleColor in ['blanc', 'white', 'jaune', 'yellow'] %}#000{% else %}#fff{% endif %}">
-                                {{ request.vehicleColor }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% endif %}
-                </table>
-
-                <!-- Documents du vehicule -->
-                <hr>
-                <p class="mb-2"><strong><i class="bi bi-file-earmark-pdf"></i> Documents du vehicule:</strong></p>
-                {% if request.vehicleDocumentsPath %}
-                    <a href="{{ request.vehicleDocumentsPath }}" target="_blank" class="btn btn-outline-primary btn-sm w-100">
-                        <i class="bi bi-eye"></i> Voir les documents
-                    </a>
+                {% if request.emergencyContactPhone %}
+                    <p class="mb-0"><i class="bi bi-phone"></i> {{ request.emergencyContactPhone }}</p>
                 {% else %}
-                    <div class="alert alert-warning py-2 mb-0">
-                        <i class="bi bi-exclamation-triangle"></i> Documents non fournis
-                    </div>
+                    <p class="text-muted mb-0">Non renseigné</p>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Message du demandeur -->
         {% if request.message %}
         <div class="card mb-4">
             <div class="card-header">
@@ -148,56 +73,129 @@
         {% endif %}
     </div>
 
-    <!-- Colonne droite: Photos + Decision -->
+    <!-- Colonne centrale: Documents -->
     <div class="col-md-4">
-        <!-- Photos de verification -->
+        {% if request.requestType == 'national' %}
+        <!-- National: CIP + Véhicule -->
         <div class="card mb-4">
-            <div class="card-header bg-warning">
-                <i class="bi bi-camera"></i> Photos de verification
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-card-heading"></i> Identité (CIP)
             </div>
             <div class="card-body">
-                <!-- Selfie -->
-                <p class="mb-2"><strong>Selfie du visage:</strong></p>
-                {% if request.selfiePath %}
-                    <img src="{{ request.selfiePath }}" alt="Selfie" class="img-fluid img-thumbnail mb-3" style="max-height: 200px;">
+                <p><strong>N° CIP :</strong>
+                    <span class="badge bg-primary fs-6">{{ request.idCardNumber ?? 'Non renseigné' }}</span>
+                </p>
+                {% if request.cipPath %}
+                    <a href="/{{ request.cipPath }}" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-file-earmark-pdf"></i> Voir le CIP (PDF)
+                    </a>
                 {% else %}
-                    <div class="alert alert-danger py-2 mb-3">
-                        <i class="bi bi-x-circle"></i> Selfie NON FOURNI
-                    </div>
-                {% endif %}
-
-                <!-- Selfie avec CIP -->
-                <p class="mb-2"><strong>Selfie avec CIP en main:</strong></p>
-                {% if request.selfieWithCipPath %}
-                    <img src="{{ request.selfieWithCipPath }}" alt="Selfie avec CIP" class="img-fluid img-thumbnail" style="max-height: 200px;">
-                {% else %}
-                    <div class="alert alert-danger py-2 mb-0">
-                        <i class="bi bi-x-circle"></i> Selfie avec CIP NON FOURNI
+                    <div class="alert alert-warning py-2 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> CIP non fourni
                     </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Decision -->
-        <div class="card">
-            <div class="card-header bg-light">
-                <i class="bi bi-check-circle"></i> Decision
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-bicycle"></i> Véhicule
             </div>
             <div class="card-body">
-                <!-- Bouton Approuver -->
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Type</strong></td>
+                        <td>{{ request.vehicleType ? request.vehicleType|upper : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Immatriculation</strong></td>
+                        <td><span class="badge bg-dark">{{ request.vehicleRegistration ?? '-' }}</span></td>
+                    </tr>
+                </table>
+                {% if request.carteGrisePath %}
+                    <a href="/{{ request.carteGrisePath }}" target="_blank" class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-file-earmark-pdf"></i> Voir la carte grise (PDF)
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning py-2 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Carte grise non fournie
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% else %}
+        <!-- International: Passeport + Visa + Billet -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-passport"></i> Documents de voyage
+            </div>
+            <div class="card-body">
+                <p><strong>N° Passeport :</strong>
+                    <span class="badge bg-primary fs-6">{{ request.passportNumber ?? 'Non renseigné' }}</span>
+                </p>
+                {% if request.passportPath %}
+                    <a href="/{{ request.passportPath }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-file-earmark-pdf"></i> Voir le passeport (PDF)
+                    </a>
+                {% else %}
+                    <div class="alert alert-danger py-2 mb-2">
+                        <i class="bi bi-x-circle"></i> Passeport non fourni
+                    </div>
+                {% endif %}
+
+                {% if request.visaPath %}
+                    <a href="/{{ request.visaPath }}" target="_blank" class="btn btn-outline-secondary btn-sm w-100 mb-2">
+                        <i class="bi bi-file-earmark-pdf"></i> Voir le visa (PDF)
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning py-2 mb-2">
+                        <i class="bi bi-exclamation-triangle"></i> Visa non fourni
+                    </div>
+                {% endif %}
+
+                {% if request.billetAvionPath %}
+                    <a href="/{{ request.billetAvionPath }}" target="_blank" class="btn btn-outline-info btn-sm w-100">
+                        <i class="bi bi-file-earmark-pdf"></i> Voir le billet d'avion (PDF)
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning py-2 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Billet d'avion non fourni
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-globe"></i> Destination
+            </div>
+            <div class="card-body">
+                <p><strong>Pays :</strong> {{ request.destinationCountry ?? '-' }}</p>
+                <p class="mb-0"><strong>Logement :</strong> {{ request.destinationAddress ?? '-' }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Colonne droite: Décision -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <i class="bi bi-check-circle"></i> Décision
+            </div>
+            <div class="card-body">
                 <form action="{{ path('admin_chevaliers_approve', {id: request.id}) }}" method="POST" class="mb-3">
-                    <button type="submit" class="btn btn-success btn-lg w-100" onclick="return confirm('Approuver cette demande et creer le compte Chevalier ?')">
+                    <button type="submit" class="btn btn-success btn-lg w-100" onclick="return confirm('Approuver cette demande ?')">
                         <i class="bi bi-check-lg"></i> Approuver
                     </button>
-                    <small class="text-muted d-block mt-1">Un email avec les identifiants sera envoye.</small>
                 </form>
 
                 <hr>
 
-                <!-- Bouton Rejeter -->
                 <form action="{{ path('admin_chevaliers_reject', {id: request.id}) }}" method="POST">
                     <div class="mb-2">
-                        <textarea name="reason" class="form-control" rows="2" placeholder="Raison du refus (sera envoyee par email)"></textarea>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="Raison du refus"></textarea>
                     </div>
                     <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Refuser cette demande ?')">
                         <i class="bi bi-x-lg"></i> Refuser
@@ -207,7 +205,7 @@
                 <hr>
 
                 <a href="{{ path('admin_chevaliers_pending') }}" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-arrow-left"></i> Retour a la liste
+                    <i class="bi bi-arrow-left"></i> Retour à la liste
                 </a>
             </div>
         </div>
