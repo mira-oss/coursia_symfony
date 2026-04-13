@@ -59,6 +59,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $selfieWithIdPath = null;
 
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $selfiePath = null;
+
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $residenceAddress = null;
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $emergencyContactName = null;
+
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $emergencyContactPhone = null;
+
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $vehicleType = null;
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $vehicleRegistration = null;
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $vehicleCardNumber = null;
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $vehicleBrand = null;
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $vehicleModel = null;
+
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $vehicleColor = null;
+
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $vehicleDocumentsPath = null;
+
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?\DateTimeImmutable $verifiedAt = null;
 
@@ -246,6 +279,127 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSelfieWithIdPath(?string $selfieWithIdPath): static
     {
         $this->selfieWithIdPath = $selfieWithIdPath;
+        return $this;
+    }
+
+    public function getSelfiePath(): ?string
+    {
+        return $this->selfiePath;
+    }
+
+    public function setSelfiePath(?string $selfiePath): static
+    {
+        $this->selfiePath = $selfiePath;
+        return $this;
+    }
+
+    public function getResidenceAddress(): ?string
+    {
+        return $this->residenceAddress;
+    }
+
+    public function setResidenceAddress(?string $residenceAddress): static
+    {
+        $this->residenceAddress = $residenceAddress;
+        return $this;
+    }
+
+    public function getEmergencyContactName(): ?string
+    {
+        return $this->emergencyContactName;
+    }
+
+    public function setEmergencyContactName(?string $emergencyContactName): static
+    {
+        $this->emergencyContactName = $emergencyContactName;
+        return $this;
+    }
+
+    public function getEmergencyContactPhone(): ?string
+    {
+        return $this->emergencyContactPhone;
+    }
+
+    public function setEmergencyContactPhone(?string $emergencyContactPhone): static
+    {
+        $this->emergencyContactPhone = $emergencyContactPhone;
+        return $this;
+    }
+
+    public function getVehicleType(): ?string
+    {
+        return $this->vehicleType;
+    }
+
+    public function setVehicleType(?string $vehicleType): static
+    {
+        $this->vehicleType = $vehicleType;
+        return $this;
+    }
+
+    public function getVehicleRegistration(): ?string
+    {
+        return $this->vehicleRegistration;
+    }
+
+    public function setVehicleRegistration(?string $vehicleRegistration): static
+    {
+        $this->vehicleRegistration = $vehicleRegistration;
+        return $this;
+    }
+
+    public function getVehicleCardNumber(): ?string
+    {
+        return $this->vehicleCardNumber;
+    }
+
+    public function setVehicleCardNumber(?string $vehicleCardNumber): static
+    {
+        $this->vehicleCardNumber = $vehicleCardNumber;
+        return $this;
+    }
+
+    public function getVehicleBrand(): ?string
+    {
+        return $this->vehicleBrand;
+    }
+
+    public function setVehicleBrand(?string $vehicleBrand): static
+    {
+        $this->vehicleBrand = $vehicleBrand;
+        return $this;
+    }
+
+    public function getVehicleModel(): ?string
+    {
+        return $this->vehicleModel;
+    }
+
+    public function setVehicleModel(?string $vehicleModel): static
+    {
+        $this->vehicleModel = $vehicleModel;
+        return $this;
+    }
+
+    public function getVehicleColor(): ?string
+    {
+        return $this->vehicleColor;
+    }
+
+    public function setVehicleColor(?string $vehicleColor): static
+    {
+        $this->vehicleColor = $vehicleColor;
+        return $this;
+    }
+
+    public function getVehicleDocumentsPath(): ?string
+    {
+        return $this->vehicleDocumentsPath;
+    }
+
+    public function setVehicleDocumentsPath(?string $vehicleDocumentsPath): static
+    {
+        $this->vehicleDocumentsPath = $vehicleDocumentsPath;
         return $this;
     }
 

@@ -47,13 +47,17 @@
 
                 <div class="d-grid gap-2">
                     {% if user.isActive %}
-                        <a href="{{ path('admin_users_toggle', {id: user.id}) }}" class="btn btn-warning" onclick="return confirm('Desactiver cet utilisateur ?')">
-                            <i class="bi bi-pause-circle"></i> Desactiver
-                        </a>
+                        <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" onsubmit="return confirm('Désactiver cet utilisateur ?')">
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="bi bi-pause-circle"></i> Désactiver
+                            </button>
+                        </form>
                     {% else %}
-                        <a href="{{ path('admin_users_toggle', {id: user.id}) }}" class="btn btn-success">
-                            <i class="bi bi-play-circle"></i> Activer
-                        </a>
+                        <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-play-circle"></i> Activer
+                            </button>
+                        </form>
                     {% endif %}
                     {% if user.role != 'admin' %}
                         <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}"
@@ -92,7 +96,7 @@
                         {% for course in courses %}
                         <tr>
                             <td>#{{ course.id }}</td>
-                            <td>{{ course.title|slice(0,25) }}...</td>
+                            <td>{{ course.title ? course.title|slice(0,25) ~ '...' : '-' }}</td>
                             <td>
                                 {% if course.status == 'finished' %}
                                     <span class="badge bg-success">Termine</span>
@@ -103,7 +107,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if course.createdBy.id == user.id %}
+                                {% if course.createdBy and course.createdBy.id == user.id %}
                                     <span class="badge bg-primary">Elu</span>
                                 {% else %}
                                     <span class="badge bg-success">Chevalier</span>

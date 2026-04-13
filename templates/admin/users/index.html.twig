@@ -73,13 +73,17 @@
                                 <i class="bi bi-eye"></i>
                             </a>
                             {% if user.isActive %}
-                                <a href="{{ path('admin_users_toggle', {id: user.id}) }}" class="btn btn-sm btn-outline-warning" title="Desactiver" onclick="return confirm('Desactiver cet utilisateur ?')">
-                                    <i class="bi bi-pause-circle"></i>
-                                </a>
+                                <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" style="display:inline;" onsubmit="return confirm('Désactiver cet utilisateur ?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Désactiver">
+                                        <i class="bi bi-pause-circle"></i>
+                                    </button>
+                                </form>
                             {% else %}
-                                <a href="{{ path('admin_users_toggle', {id: user.id}) }}" class="btn btn-sm btn-outline-success" title="Activer">
-                                    <i class="bi bi-play-circle"></i>
-                                </a>
+                                <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Activer">
+                                        <i class="bi bi-play-circle"></i>
+                                    </button>
+                                </form>
                             {% endif %}
                         </div>
                     </td>
@@ -97,7 +101,7 @@
 
 <script>
 document.getElementById('roleFilter').addEventListener('change', function() {
-    const role = this.value;0,
+    const role = this.value;
     window.location.href = '{{ path('admin_users') }}' + (role ? '?role=' + role : '');
 });
 </script>

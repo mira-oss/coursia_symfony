@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Entity\Course;
 use App\Entity\Conversation;
 use App\Entity\ChevalierRequest;
+use App\Entity\Notification;
+use App\Entity\PasswordResetToken;
 use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -266,8 +268,8 @@ class AdminPanelController extends AbstractController
         ]);
     }
 
-    #[Route('/users/{id}/toggle', name: 'admin_users_toggle')]
-    public function toggleUser(int $id, SessionInterface $session): Response
+    #[Route('/users/{id}/toggle', name: 'admin_users_toggle', methods: ['POST'])]
+    public function toggleUser(int $id, Request $request, SessionInterface $session): Response
     {
         $admin = $this->getAdmin($session);
         if (!$admin) {
@@ -284,6 +286,11 @@ class AdminPanelController extends AbstractController
         $this->em->flush();
 
         $this->addFlash('success', $user->getIsActive() ? 'Utilisateur activé' : 'Utilisateur désactivé');
+
+        $referer = $request->headers->get('referer', '');
+        if (str_contains($referer, '/admin/users') && !str_contains($referer, '/admin/users/' . $id)) {
+            return $this->redirectToRoute('admin_users');
+        }
 
         return $this->redirectToRoute('admin_users_show', ['id' => $id]);
     }
@@ -457,7 +464,7 @@ class AdminPanelController extends AbstractController
     private function copyRequestDataToUser(User $user, ChevalierRequest $request): void
     {
         // Informations d'identite
-        $user->setIdCardNumber($request->getNpi());
+        $user->setIdCardNumber($request->getIdCardNumber());
         $user->setResidenceAddress($request->getResidenceAddress());
         $user->setEmergencyContactName($request->getEmergencyContactName());
         $user->setEmergencyContactPhone($request->getEmergencyContactPhone());
@@ -497,6 +504,21 @@ class AdminPanelController extends AbstractController
         $chevalierRequest->setProcessedBy($admin);
         $chevalierRequest->setProcessedAt(new \DateTimeImmutable());
         $chevalierRequest->setAdminNotes($reason);
+
+        // Envoyer une notification in-app à l'utilisateur concerné
+        $targetUser = $chevalierRequest->getRequestingUser();
+        if ($targetUser) {
+            $notification = new Notification();
+            $notification->setUser($targetUser);
+            $notification->setType('chevalier_rejected');
+            $notification->setTitle('Demande Chevalier refusée');
+            $notification->setMessage(
+                'Votre demande pour devenir Chevalier a été refusée. Motif : ' . $reason .
+                ' Vous pouvez soumettre une nouvelle candidature en corrigeant les points mentionnés.'
+            );
+            $notification->setData(['requestId' => $chevalierRequest->getId()]);
+            $this->em->persist($notification);
+        }
 
         $this->em->flush();
 
@@ -838,6 +860,138 @@ class AdminPanelController extends AbstractController
             'settings' => $settings,
             'success' => $success,
             'pending_chevaliers_count' => $this->getPendingChevalierCount()
+        ]);
+    }
+
+    // ================= MOT DE PASSE OUBLIÉ =================
+
+    #[Route('/forgot-password', name: 'admin_forgot_password', methods: ['GET', 'POST'])]
+    public function forgotPassword(Request $request, SessionInterface $session): Response
+    {
+        if ($session->get('admin_id')) {
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        $error = null;
+
+        if ($request->isMethod('POST')) {
+            $email = trim($request->request->get('email', ''));
+
+            if (empty($email)) {
+                $error = 'Veuillez saisir votre adresse email';
+            } else {
+                $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+                if ($user && $user->getRole() === 'admin' && $user->getPhone()) {
+                    // Invalider les anciens tokens
+                    $this->em->getRepository(PasswordResetToken::class)
+                        ->invalidateAllForUser($user);
+
+                    // Créer un nouveau token
+                    $token = new PasswordResetToken();
+                    $token->setUser($user);
+                    $this->em->persist($token);
+                    $this->em->flush();
+
+                    // Envoyer le code par SMS
+                    $this->smsService->sendPasswordResetCode($user->getPhone(), $token->getCode());
+                }
+
+                // Toujours afficher le même message (sécurité anti-énumération)
+                $session->set('reset_email', $email);
+                $this->addFlash('success', 'Si un compte admin existe avec cet email, un code vous a été envoyé par SMS.');
+                return $this->redirectToRoute('admin_reset_verify');
+            }
+        }
+
+        return $this->render('admin/forgot_password.html.twig', [
+            'error' => $error,
+        ]);
+    }
+
+    #[Route('/reset-password/verify', name: 'admin_reset_verify', methods: ['GET', 'POST'])]
+    public function verifyResetCode(Request $request, SessionInterface $session): Response
+    {
+        $email = $session->get('reset_email');
+        if (!$email) {
+            return $this->redirectToRoute('admin_forgot_password');
+        }
+
+        $error = null;
+
+        if ($request->isMethod('POST')) {
+            $code = trim($request->request->get('code', ''));
+
+            if (empty($code)) {
+                $error = 'Veuillez saisir le code reçu par SMS';
+            } else {
+                $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+                if ($user) {
+                    $token = $this->em->getRepository(PasswordResetToken::class)
+                        ->findValidToken($user, $code);
+
+                    if ($token) {
+                        $session->set('reset_token_id', $token->getId());
+                        return $this->redirectToRoute('admin_reset_new_password');
+                    }
+                }
+
+                $error = 'Code invalide ou expiré. Vérifiez le SMS ou recommencez.';
+            }
+        }
+
+        return $this->render('admin/reset_password_verify.html.twig', [
+            'error' => $error,
+        ]);
+    }
+
+    #[Route('/reset-password/new', name: 'admin_reset_new_password', methods: ['GET', 'POST'])]
+    public function newPassword(Request $request, SessionInterface $session): Response
+    {
+        $tokenId = $session->get('reset_token_id');
+        if (!$tokenId) {
+            return $this->redirectToRoute('admin_forgot_password');
+        }
+
+        $token = $this->em->getRepository(PasswordResetToken::class)->find($tokenId);
+
+        if (!$token || !$token->isValid()) {
+            $session->remove('reset_token_id');
+            $session->remove('reset_email');
+            $this->addFlash('error', 'Session expirée. Recommencez la procédure.');
+            return $this->redirectToRoute('admin_forgot_password');
+        }
+
+        $error = null;
+
+        if ($request->isMethod('POST')) {
+            $newPassword = $request->request->get('newPassword', '');
+            $confirmPassword = $request->request->get('confirmPassword', '');
+
+            if (empty($newPassword)) {
+                $error = 'Veuillez saisir un nouveau mot de passe';
+            } elseif (strlen($newPassword) < 6) {
+                $error = 'Le mot de passe doit contenir au moins 6 caractères';
+            } elseif ($newPassword !== $confirmPassword) {
+                $error = 'Les mots de passe ne correspondent pas';
+            } else {
+                $user = $token->getUser();
+                $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
+
+                $token->setUsed(true);
+                $this->em->flush();
+
+                $session->remove('reset_token_id');
+                $session->remove('reset_email');
+
+                $this->addFlash('success', 'Mot de passe modifié avec succès. Connectez-vous.');
+                return $this->redirectToRoute('admin_login');
+            }
+        }
+
+        return $this->render('admin/reset_password_new.html.twig', [
+            'error' => $error,
         ]);
     }
 

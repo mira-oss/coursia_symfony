@@ -46,6 +46,9 @@ class ChevalierRequest
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $residenceAddress = null; // Quartier / adresse de résidence
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $emergencyContactName = null; // Nom d'un proche
+
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $emergencyContactPhone = null; // Numéro d'un proche
 
@@ -56,11 +59,32 @@ class ChevalierRequest
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $cipPath = null; // PDF CIP / NPI
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $selfiePath = null; // Photo selfie du demandeur
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $selfieWithCipPath = null; // Selfie avec la pièce CIP
+
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $vehicleType = null; // moto | voiture | velo | autres
 
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $vehicleRegistration = null; // Immatriculation du véhicule
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $vehicleCardNumber = null; // Numéro de la carte grise
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $vehicleBrand = null; // Marque du véhicule
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $vehicleModel = null; // Modèle du véhicule
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $vehicleColor = null; // Couleur du véhicule
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $vehicleDocumentsPath = null; // Documents véhicule (PDF)
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $carteGrisePath = null; // PDF carte grise
@@ -356,6 +380,17 @@ class ChevalierRequest
         return $this;
     }
 
+    public function getEmergencyContactName(): ?string
+    {
+        return $this->emergencyContactName;
+    }
+
+    public function setEmergencyContactName(?string $emergencyContactName): self
+    {
+        $this->emergencyContactName = $emergencyContactName;
+        return $this;
+    }
+
     public function getEmergencyContactPhone(): ?string
     {
         return $this->emergencyContactPhone;
@@ -364,6 +399,83 @@ class ChevalierRequest
     public function setEmergencyContactPhone(?string $emergencyContactPhone): self
     {
         $this->emergencyContactPhone = $emergencyContactPhone;
+        return $this;
+    }
+
+    public function getVehicleCardNumber(): ?string
+    {
+        return $this->vehicleCardNumber;
+    }
+
+    public function setVehicleCardNumber(?string $vehicleCardNumber): self
+    {
+        $this->vehicleCardNumber = $vehicleCardNumber;
+        return $this;
+    }
+
+    public function getVehicleBrand(): ?string
+    {
+        return $this->vehicleBrand;
+    }
+
+    public function setVehicleBrand(?string $vehicleBrand): self
+    {
+        $this->vehicleBrand = $vehicleBrand;
+        return $this;
+    }
+
+    public function getVehicleModel(): ?string
+    {
+        return $this->vehicleModel;
+    }
+
+    public function setVehicleModel(?string $vehicleModel): self
+    {
+        $this->vehicleModel = $vehicleModel;
+        return $this;
+    }
+
+    public function getVehicleColor(): ?string
+    {
+        return $this->vehicleColor;
+    }
+
+    public function setVehicleColor(?string $vehicleColor): self
+    {
+        $this->vehicleColor = $vehicleColor;
+        return $this;
+    }
+
+    public function getVehicleDocumentsPath(): ?string
+    {
+        return $this->vehicleDocumentsPath;
+    }
+
+    public function setVehicleDocumentsPath(?string $vehicleDocumentsPath): self
+    {
+        $this->vehicleDocumentsPath = $vehicleDocumentsPath;
+        return $this;
+    }
+
+    public function getSelfiePath(): ?string
+    {
+        return $this->selfiePath;
+    }
+
+    public function setSelfiePath(?string $selfiePath): self
+    {
+        $this->selfiePath = $selfiePath;
+        return $this;
+    }
+
+    public function getSelfieWithCipPath(): ?string
+    {
+        return $this->selfieWithCipPath;
+    }
+
+    public function setSelfieWithCipPath(?string $selfieWithCipPath): self
+    {
+        $this->selfieWithCipPath = $selfieWithCipPath;
         return $this;
     }
 

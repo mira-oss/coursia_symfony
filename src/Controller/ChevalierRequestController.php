@@ -149,9 +149,10 @@ class ChevalierRequestController extends AbstractController
 
         return $this->json([
             'hasRequest' => true,
-            'status' => $request->getStatus(),
-            'createdAt' => $request->getCreatedAt()->format('Y-m-d H:i:s'),
+            'status'     => $request->getStatus(),
+            'createdAt'  => $request->getCreatedAt()->format('Y-m-d H:i:s'),
             'adminNotes' => $request->getAdminNotes(),
+            'canReapply' => $request->getStatus() === 'rejected',
         ]);
     }
 }

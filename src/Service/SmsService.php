@@ -44,6 +44,15 @@ class SmsService
     }
 
     /**
+     * Envoie le code de réinitialisation de mot de passe par SMS
+     */
+    public function sendPasswordResetCode(string $phone, string $code): bool
+    {
+        $message = "Coursia Admin - Votre code de réinitialisation est : {$code}. Valable 1 heure. Ne le partagez pas.";
+        return $this->send($phone, $message);
+    }
+
+    /**
      * Envoie un SMS générique
      */
     public function send(string $phone, string $message): bool
