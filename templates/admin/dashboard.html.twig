@@ -1,9 +1,94 @@
 {% extends 'admin/layout.html.twig' %}
 
 {% block title %}Dashboard - Coursia Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
+    /* Welcome Banner */
+    .welcome-banner {
+        background: url('/images/Orange Room.jpeg') center center / cover no-repeat;
+        border-radius: 20px;
+        padding: 36px 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+        position: relative;
+        min-height: 200px;
+    }
+
+    .welcome-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 100%);
+        border-radius: 20px;
+    }
+
+    .welcome-banner .welcome-text {
+        position: relative;
+        z-index: 1;
+    }
+
+    .welcome-banner .welcome-text .day {
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 6px;
+        text-transform: capitalize;
+    }
+
+    .welcome-banner .welcome-text h2 {
+        font-size: 32px;
+        font-weight: 800;
+        color: white;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .welcome-banner .welcome-text p {
+        font-size: 15px;
+        color: rgba(255,255,255,0.6);
+        margin: 0;
+    }
+
+    .welcome-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .welcome-badge {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 50px;
+    }
+
+    .welcome-badge.orange {
+        background: rgba(249,115,22,0.2);
+        color: #FB923C;
+        border: 1px solid rgba(249,115,22,0.3);
+    }
+
+    .welcome-badge.green {
+        background: rgba(22,163,74,0.2);
+        color: #4ADE80;
+        border: 1px solid rgba(22,163,74,0.3);
+    }
+
+    .welcome-badge.dark {
+        background: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.75);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-banner { padding: 24px; min-height: auto; }
+        .welcome-banner .welcome-text h2 { font-size: 22px; }
+    }
+
     /* Donut Chart */
     .donut-chart {
         position: relative;
@@ -19,7 +104,6 @@
 
     .donut-chart circle {
         fill: none;
-        "
         stroke-width: 25;
     }
 
@@ -102,55 +186,26 @@
 {% endblock %}
 
 {% block content %}
-<!-- Filter Bar -->
-<div class="filter-bar">
-    <div class="filter-left">
-        <div class="dropdown">
-            <button class="filter-btn dropdown-toggle" type="button" id="periodDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-calendar3"></i>
-                {% if currentPeriod == '7' %}
-                    7 derniers jours
-                {% elseif currentPeriod == '30' %}
-                    30 derniers jours
-                {% elseif currentPeriod == '90' %}
-                    3 derniers mois
-                {% elseif currentPeriod == '365' %}
-                    Cette annee
-                {% else %}
-                    Toutes les periodes
-                {% endif %}
-                <i class="bi bi-chevron-down ms-1"></i>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="periodDropdown">
-                <li><a class="dropdown-item {{ currentPeriod == '7' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '7'}) }}">
-                    <i class="bi bi-calendar-week me-2"></i>7 derniers jours
-                </a></li>
-                <li><a class="dropdown-item {{ currentPeriod == '30' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '30'}) }}">
-                    <i class="bi bi-calendar-month me-2"></i>30 derniers jours
-                </a></li>
-                <li><a class="dropdown-item {{ currentPeriod == '90' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '90'}) }}">
-                    <i class="bi bi-calendar3 me-2"></i>3 derniers mois
-                </a></li>
-                <li><a class="dropdown-item {{ currentPeriod == '365' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: '365'}) }}">
-                    <i class="bi bi-calendar-range me-2"></i>Cette annee
-                </a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item {{ currentPeriod == 'all' ? 'active' : '' }}" href="{{ path('admin_dashboard', {period: 'all'}) }}">
-                    <i class="bi bi-calendar-check me-2"></i>Toutes les periodes
-                </a></li>
-            </ul>
+
+<!-- Welcome Banner -->
+<div class="welcome-banner mb-4">
+    <div class="welcome-text">
+        <div class="day"><i class="bi bi-calendar3 me-1"></i>{{ "now"|date("l d/m/Y") }}</div>
+        <h2>Bonjour, {{ admin is defined and admin ? admin.firstName : 'Admin' }} 👋</h2>
+        <p>Prêt à gérer vos livraisons aujourd'hui ?</p>
+        <div class="welcome-badges mt-3">
+            <span class="welcome-badge orange"><i class="bi bi-truck me-1"></i>{{ stats.totalCourses }} courses</span>
+            <span class="welcome-badge green"><i class="bi bi-shield-check me-1"></i>{{ stats.totalChevaliers }} chevaliers</span>
+            <span class="welcome-badge dark"><i class="bi bi-people me-1"></i>{{ stats.totalUsers }} utilisateurs</span>
         </div>
     </div>
-    <button class="export-btn" onclick="window.print()">
-        <i class="bi bi-download"></i>
-        Exporter PDF
-    </button>
 </div>
 
 <!-- Stats Cards -->
 <div class="row mb-4 g-4">
-    <div class="col-md-4">
-        <div class="stat-card">
+    <div class="col-md-3">
+        <a href="{{ path('admin_courses') }}" class="stat-card-link">
+        <div class="stat-card h-100">
             <div class="stat-icon orange">
                 <i class="bi bi-truck"></i>
             </div>
@@ -169,169 +224,109 @@
                 </div>
             </div>
         </div>
+        </a>
     </div>
-    <div class="col-md-4">
-        <div class="stat-card">
+    <div class="col-md-3">
+        <a href="{{ path('admin_chevaliers_pending') }}" class="stat-card-link">
+        <div class="stat-card h-100">
             <div class="stat-icon green">
                 <i class="bi bi-shield-check"></i>
             </div>
             <div class="stat-info">
                 <p>Chevaliers actifs</p>
                 <h3>{{ stats.totalChevaliers }} livreurs</h3>
-                <div class="stat-trend up">
-                    <i class="bi bi-arrow-up"></i> +20% vs mois dernier
+                <div class="stat-trend">
+                    <i class="bi bi-clock-history"></i> {{ stats.pendingChevaliers }} en attente
                 </div>
             </div>
         </div>
+        </a>
     </div>
-    <div class="col-md-4">
-        <div class="stat-card">
+    <div class="col-md-3">
+        <a href="{{ path('admin_users') }}" class="stat-card-link">
+        <div class="stat-card h-100">
             <div class="stat-icon blue">
                 <i class="bi bi-people"></i>
             </div>
             <div class="stat-info">
                 <p>Utilisateurs total</p>
                 <h3>{{ stats.totalUsers }}</h3>
-                <div class="stat-trend up">
-                    <i class="bi bi-arrow-up"></i> +5% vs mois dernier
+                <div class="stat-trend">
+                    <i class="bi bi-person-check"></i> {{ stats.totalUsers - stats.totalChevaliers }} élus
                 </div>
             </div>
         </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('admin_courses') }}" class="stat-card-link">
+        <div class="stat-card h-100">
+            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10B981;">
+                <i class="bi bi-bar-chart-line"></i>
+            </div>
+            <div class="stat-info">
+                <p>Statut des courses</p>
+                <h3>{{ stats.coursesFinished }} terminées</h3>
+                <div class="stat-trend" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <span style="color: #F97316; font-size: 12px;">
+                        <i class="bi bi-arrow-repeat"></i> {{ stats.coursesInProgress }} en cours
+                    </span>
+                    <span style="color: #EF4444; font-size: 12px;">
+                        <i class="bi bi-x-circle"></i> {{ stats.coursesCancelled }} annulées
+                    </span>
+                </div>
+            </div>
+        </div>
+        </a>
     </div>
 </div>
 
 <div class="row g-4">
-    <!-- Statistics Section -->
-    <div class="col-md-4">
+    <!-- Graphe courses par statut -->
+    <div class="col-md-7">
         <div class="card h-100">
             <div class="card-body">
                 <div class="section-header">
-                    <h5 class="section-title">Statistiques</h5>
-                    <a href="#" class="section-link">plus ></a>
+                    <h5 class="section-title">Courses par statut</h5>
+                    <a href="{{ path('admin_courses') }}" class="section-link">Voir tout ›</a>
                 </div>
-
-                <!-- Donut Chart -->
-                <div class="d-flex justify-content-center my-4">
-                    <div class="donut-chart">
-                        <svg viewBox="0 0 100 100">
-                            {% set total = stats.totalChevaliers + stats.pendingChevaliers + stats.totalUsers %}
-                            {% set chevalierPercent = total > 0 ? (stats.totalChevaliers / total * 100) : 33 %}
-                            {% set pendingPercent = total > 0 ? (stats.pendingChevaliers / total * 100) : 33 %}
-                            {% set userPercent = total > 0 ? ((stats.totalUsers - stats.totalChevaliers) / total * 100) : 34 %}
-
-                            <!-- Background circle -->
-                            <circle cx="50" cy="50" r="35" stroke="#E5E7EB"></circle>
-
-                            <!-- Chevaliers (orange) -->
-                            <circle cx="50" cy="50" r="35" stroke="#F97316"
-                                stroke-dasharray="{{ chevalierPercent * 2.2 }} 220"
-                                stroke-dashoffset="0"></circle>
-
-                            <!-- Pending (yellow) -->
-                            <circle cx="50" cy="50" r="35" stroke="#FBBF24"
-                                stroke-dasharray="{{ pendingPercent * 2.2 }} 220"
-                                stroke-dashoffset="-{{ chevalierPercent * 2.2 }}"></circle>
-
-                            <!-- Users (green) -->
-                            <circle cx="50" cy="50" r="35" stroke="#10B981"
-                                stroke-dasharray="{{ userPercent * 2.2 }} 220"
-                                stroke-dashoffset="-{{ (chevalierPercent + pendingPercent) * 2.2 }}"></circle>
-                        </svg>
-                        <div class="donut-center">
-                            <small>Total</small>
-                            <h2>{{ stats.totalUsers }}</h2>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Legend -->
-                <div class="mt-4">
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #F97316;"></div>
-                        <span class="legend-text">Chevaliers</span>
-                        <span class="legend-value">{{ stats.totalChevaliers }}</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #FBBF24;"></div>
-                        <span class="legend-text">En attente</span>
-                        <span class="legend-value">{{ stats.pendingChevaliers }}</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #10B981;"></div>
-                        <span class="legend-text">Utilisateurs</span>
-                        <span class="legend-value">{{ stats.totalUsers - stats.totalChevaliers }}</span>
-                    </div>
-                </div>
+                <canvas id="coursesChart" height="220"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Orders History -->
-    <div class="col-md-8">
+    <!-- Graphe répartition utilisateurs -->
+    <div class="col-md-5">
         <div class="card h-100">
             <div class="card-body">
                 <div class="section-header">
-                    <h5 class="section-title">Historique des courses</h5>
-                    <a href="{{ path('admin_courses') }}" class="section-link">plus ></a>
+                    <h5 class="section-title">Répartition utilisateurs</h5>
                 </div>
-
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>N. Course</th>
-                                <th>Status</th>
-                                <th>Date et Heure</th>
-                                <th>Prix</th>
-                                <th>Info</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for course in recentCourses %}
-                            <tr>
-                                <td><strong>#{{ course.id }}</strong></td>
-                                <td>
-                                    {% if course.status == 'finished' %}
-                                        <span class="status-badge completed">
-                                            <i class="bi bi-check-circle-fill"></i> Termine
-                                        </span>
-                                    {% elseif course.status == 'created' or course.status == 'accepted' %}
-                                        <span class="status-badge pending">
-                                            <i class="bi bi-clock-fill"></i> En attente
-                                        </span>
-                                    {% elseif course.status == 'cancelled' %}
-                                        <span class="status-badge failed">
-                                            <i class="bi bi-x-circle-fill"></i> Annule
-                                        </span>
-                                    {% elseif course.status == 'started' or course.status == 'delivered' %}
-                                        <span class="status-badge completed">
-                                            <i class="bi bi-arrow-repeat"></i> En cours
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ course.createdAt|date('d/m/Y') }} a {{ course.createdAt|date('H:i') }}</td>
-                                <td class="amount-cell">{{ course.estimatedPrice|default(0) }} FCFA</td>
-                                <td>
-                                    <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="btn btn-sm" style="background: var(--coursia-gray-light); color: #6B7280;">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center py-5">
-                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-3 mb-0">Aucune course pour le moment</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div style="position:relative; max-width:220px; margin: 20px auto 0;">
+                    <canvas id="usersChart"></canvas>
+                </div>
+                <div class="mt-4">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#F97316;"></div>
+                        <span class="legend-text">Chevaliers</span>
+                        <span class="legend-value">{{ stats.totalChevaliers }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#16A34A;"></div>
+                        <span class="legend-text">Élus</span>
+                        <span class="legend-value">{{ stats.totalUsers - stats.totalChevaliers }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#FBBF24;"></div>
+                        <span class="legend-text">Demandes en attente</span>
+                        <span class="legend-value">{{ stats.pendingChevaliers }}</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- Pending Chevaliers Section -->
 {% if pendingRequests|length > 0 %}
@@ -375,4 +370,75 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#9CA3AF' : '#6B7280';
+
+// Graphe courses par statut
+new Chart(document.getElementById('coursesChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Créées', 'Acceptées', 'En cours', 'Livrées', 'Terminées', 'Annulées'],
+        datasets: [{
+            label: 'Courses',
+            data: [
+                {{ stats.coursesCreated }},
+                {{ stats.coursesAccepted }},
+                {{ stats.coursesStarted }},
+                {{ stats.coursesDelivered }},
+                {{ stats.coursesFinished }},
+                {{ stats.coursesCancelled }}
+            ],
+            backgroundColor: [
+                'rgba(156,163,175,0.8)',
+                'rgba(96,165,250,0.8)',
+                'rgba(249,115,22,0.8)',
+                'rgba(251,191,36,0.8)',
+                'rgba(22,163,74,0.8)',
+                'rgba(239,68,68,0.8)'
+            ],
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1, precision: 0 }, beginAtZero: true }
+        }
+    }
+});
+
+// Graphe répartition utilisateurs
+new Chart(document.getElementById('usersChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Chevaliers', 'Élus', 'En attente'],
+        datasets: [{
+            data: [
+                {{ stats.totalChevaliers }},
+                {{ stats.totalUsers - stats.totalChevaliers }},
+                {{ stats.pendingChevaliers }}
+            ],
+            backgroundColor: ['#F97316', '#16A34A', '#FBBF24'],
+            borderWidth: 0,
+            hoverOffset: 6
+        }]
+    },
+    options: {
+        cutout: '70%',
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+        }
+    }
+});
+</script>
 {% endblock %}

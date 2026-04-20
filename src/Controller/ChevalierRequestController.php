@@ -131,6 +131,128 @@ class ChevalierRequestController extends AbstractController
     }
 
     /**
+     * Soumettre une demande Chevalier sans compte (accès public).
+     * Toutes les infos personnelles sont envoyées dans le formulaire.
+     */
+    #[Route('/public', name: 'api_chevalier_request_public', methods: ['POST'])]
+    public function createPublic(Request $request): JsonResponse
+    {
+        $data = $request->request->all();
+
+        // Champs obligatoires
+        $required = ['firstName', 'lastName', 'email', 'phone', 'nationality'];
+        foreach ($required as $field) {
+            if (empty($data[$field])) {
+                return $this->json(['error' => "Le champ '{$field}' est obligatoire"], 400);
+            }
+        }
+
+        $email = trim($data['email']);
+
+        // Vérifier s'il y a déjà une demande en cours pour cet email
+        $hasPendingRequest = $this->em->getRepository(ChevalierRequest::class)
+            ->hasPendingRequest($email);
+
+        if ($hasPendingRequest) {
+            return $this->json(['error' => 'Une demande est déjà en cours de traitement pour cet email'], 400);
+        }
+
+        $requestType = $data['requestType'] ?? 'national';
+        if (!in_array($requestType, ['national', 'international'])) {
+            return $this->json(['error' => 'Type de demande invalide (national ou international)'], 400);
+        }
+
+        // Identifiant temporaire pour le nommage des fichiers
+        $tempId = random_int(100000, 999999);
+
+        try {
+            if ($requestType === 'national') {
+                $cipPath        = $this->uploadPdf($request->files->get('cip'), 'cip', $tempId);
+                $carteGrisePath = $this->uploadPdf($request->files->get('carteGrise'), 'cg', $tempId);
+                $passportPath = $visaPath = $billetAvionPath = null;
+            } else {
+                $passportPath    = $this->uploadPdf($request->files->get('passport'), 'passport', $tempId);
+                $visaPath        = $this->uploadPdf($request->files->get('visa'), 'visa', $tempId);
+                $billetAvionPath = $this->uploadPdf($request->files->get('billetAvion'), 'billet', $tempId);
+                $cipPath = $carteGrisePath = null;
+            }
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        }
+
+        $chevalierRequest = new ChevalierRequest();
+        $chevalierRequest->setEmail($email);
+        $chevalierRequest->setFirstName(trim($data['firstName']));
+        $chevalierRequest->setLastName(trim($data['lastName']));
+        $chevalierRequest->setPhone(trim($data['phone']));
+        $chevalierRequest->setNationality(trim($data['nationality']));
+        $chevalierRequest->setRequestType($requestType);
+        $chevalierRequest->setResidenceAddress($data['residenceAddress'] ?? null);
+        $chevalierRequest->setEmergencyContactName($data['emergencyContactName'] ?? null);
+        $chevalierRequest->setEmergencyContactPhone($data['emergencyContactPhone'] ?? null);
+        // National
+        $chevalierRequest->setIdCardNumber($data['idCardNumber'] ?? null);
+        $chevalierRequest->setCipPath($cipPath);
+        $chevalierRequest->setVehicleType($data['vehicleType'] ?? null);
+        $chevalierRequest->setVehicleRegistration($data['vehicleRegistration'] ?? null);
+        $chevalierRequest->setVehicleCardNumber($data['vehicleCardNumber'] ?? null);
+        $chevalierRequest->setVehicleBrand($data['vehicleBrand'] ?? null);
+        $chevalierRequest->setVehicleModel($data['vehicleModel'] ?? null);
+        $chevalierRequest->setVehicleColor($data['vehicleColor'] ?? null);
+        $chevalierRequest->setCarteGrisePath($carteGrisePath);
+        // International
+        $chevalierRequest->setPassportNumber($data['passportNumber'] ?? null);
+        $chevalierRequest->setPassportPath($passportPath);
+        $chevalierRequest->setVisaPath($visaPath);
+        $chevalierRequest->setBilletAvionPath($billetAvionPath);
+        $chevalierRequest->setDestinationCountry($data['destinationCountry'] ?? null);
+        $chevalierRequest->setDestinationAddress($data['destinationAddress'] ?? null);
+        $chevalierRequest->setMessage($data['message'] ?? null);
+        // Pas de compte associé
+        $chevalierRequest->setRequestingUser(null);
+
+        try {
+            $this->em->persist($chevalierRequest);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur lors de la création de la demande: ' . $e->getMessage()], 500);
+        }
+
+        return $this->json([
+            'message'   => 'Demande envoyée avec succès. Notre équipe l\'examinera sous 48h.',
+            'requestId' => $chevalierRequest->getId(),
+            'status'    => $chevalierRequest->getStatus(),
+        ], 201);
+    }
+
+    /**
+     * Vérifier le statut d'une demande publique par email
+     */
+    #[Route('/public/status', name: 'api_chevalier_request_public_status', methods: ['GET'])]
+    public function publicStatus(Request $request): JsonResponse
+    {
+        $email = $request->query->get('email');
+        if (!$email) {
+            return $this->json(['error' => 'Email requis'], 400);
+        }
+
+        $chevalierRequest = $this->em->getRepository(ChevalierRequest::class)
+            ->findOneBy(['email' => $email], ['createdAt' => 'DESC']);
+
+        if (!$chevalierRequest) {
+            return $this->json(['hasRequest' => false]);
+        }
+
+        return $this->json([
+            'hasRequest' => true,
+            'status'     => $chevalierRequest->getStatus(),
+            'createdAt'  => $chevalierRequest->getCreatedAt()->format('Y-m-d H:i:s'),
+            'adminNotes' => $chevalierRequest->getAdminNotes(),
+            'canReapply' => $chevalierRequest->getStatus() === 'rejected',
+        ]);
+    }
+
+    /**
      * Vérifier le statut de la demande de l'utilisateur connecté
      */
     #[Route('/my-status', name: 'api_chevalier_request_my_status', methods: ['GET'])]

@@ -3,91 +3,305 @@
 {% block title %}Courses - Coursia Admin{% endblock %}
 {% block page_title %}Courses{% endblock %}
 
+{% block extra_css %}
+<style>
+    .courses-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .courses-count {
+        font-size: 14px;
+        color: var(--coursia-text-muted);
+        font-weight: 500;
+    }
+
+    .filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filters .form-select {
+        font-size: 13px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        min-width: 150px;
+    }
+
+    /* Table */
+    .courses-table th {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--coursia-text-muted);
+        padding: 14px 16px;
+        white-space: nowrap;
+        border-bottom: 2px solid var(--coursia-gray);
+    }
+
+    .courses-table td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--coursia-gray-light);
+        font-size: 13.5px;
+    }
+
+    .courses-table tbody tr:hover {
+        background: var(--coursia-gray-light);
+        cursor: pointer;
+    }
+
+    .course-num {
+        font-weight: 700;
+        color: var(--coursia-dark);
+        font-size: 14px;
+    }
+
+    .course-title {
+        font-weight: 600;
+        color: var(--coursia-dark);
+        margin-bottom: 2px;
+        font-size: 13px;
+    }
+
+    .course-type-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 50px;
+    }
+
+    .type-regional    { background: #DBEAFE; color: #1D4ED8; }
+    .type-national    { background: #EDE9FE; color: #6D28D9; }
+    .type-international { background: #FEF3C7; color: #B45309; }
+
+    .status-pill {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .status-created      { background: #F3F4F6; color: #6B7280; }
+    .status-accepted     { background: #DBEAFE; color: #1D4ED8; }
+    .status-started      { background: #FFF7ED; color: #F97316; }
+    .status-delivered    { background: #FEF3C7; color: #D97706; }
+    .status-finished     { background: #DCFCE7; color: #16A34A; }
+    .status-cancelled    { background: #FEE2E2; color: #DC2626; }
+
+    .trajet-cell small {
+        display: block;
+        font-size: 12px;
+        color: var(--coursia-text-muted);
+        line-height: 1.6;
+    }
+
+    .trajet-cell .addr {
+        font-weight: 500;
+        color: var(--coursia-text);
+        max-width: 180px;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chevalier-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--coursia-orange), #FB923C);
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+
+    .chevalier-name {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--coursia-dark);
+    }
+
+    .price-cell {
+        font-weight: 700;
+        color: var(--coursia-green);
+        font-size: 14px;
+    }
+
+    .price-cell.no-price {
+        color: var(--coursia-text-muted);
+        font-weight: 400;
+        font-style: italic;
+        font-size: 12px;
+    }
+
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: none;
+        background: var(--coursia-gray-light);
+        color: var(--coursia-text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        background: var(--coursia-orange-light);
+        color: var(--coursia-orange);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--coursia-text-muted);
+    }
+
+    .empty-state i { font-size: 48px; opacity: 0.4; margin-bottom: 12px; display: block; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span>Liste des courses ({{ courses|length }})</span>
-        <div class="d-flex gap-2">
-            <select class="form-select form-select-sm" style="width: auto;" id="statusFilter">
-                <option value="">Tous les statuts</option>
-                <option value="created" {{ app.request.get('status') == 'created' ? 'selected' : '' }}>Cree</option>
-                <option value="accepted" {{ app.request.get('status') == 'accepted' ? 'selected' : '' }}>Accepte</option>
-                <option value="started" {{ app.request.get('status') == 'started' ? 'selected' : '' }}>En cours</option>
-                <option value="delivered" {{ app.request.get('status') == 'delivered' ? 'selected' : '' }}>Livre</option>
-                <option value="finished" {{ app.request.get('status') == 'finished' ? 'selected' : '' }}>Termine</option>
-                <option value="cancelled" {{ app.request.get('status') == 'cancelled' ? 'selected' : '' }}>Annule</option>
-            </select>
-            <select class="form-select form-select-sm" style="width: auto;" id="typeFilter">
-                <option value="">Tous les types</option>
-                <option value="regional" {{ app.request.get('type') == 'regional' ? 'selected' : '' }}>Regional</option>
-                <option value="national" {{ app.request.get('type') == 'national' ? 'selected' : '' }}>National</option>
-                <option value="international" {{ app.request.get('type') == 'international' ? 'selected' : '' }}>International</option>
-            </select>
-        </div>
+
+<div class="courses-header">
+    <div>
+        <h5 style="font-weight:700; color:var(--coursia-dark); margin:0;">
+            Toutes les courses
+            <span class="courses-count ms-2">({{ courses|length }})</span>
+        </h5>
     </div>
-    <div class="card-body">
-        <table class="table table-hover">
+    <div class="filters">
+        <select class="form-select" id="statusFilter">
+            <option value="">Tous les statuts</option>
+            <option value="created"       {{ app.request.get('status') == 'created'       ? 'selected' : '' }}>Créée</option>
+            <option value="accepted"      {{ app.request.get('status') == 'accepted'      ? 'selected' : '' }}>Acceptée</option>
+            <option value="started"       {{ app.request.get('status') == 'started'       ? 'selected' : '' }}>En cours</option>
+            <option value="delivered"     {{ app.request.get('status') == 'delivered'     ? 'selected' : '' }}>Livrée</option>
+            <option value="finished"      {{ app.request.get('status') == 'finished'      ? 'selected' : '' }}>Terminée</option>
+            <option value="cancelled"     {{ app.request.get('status') == 'cancelled'     ? 'selected' : '' }}>Annulée</option>
+        </select>
+        <select class="form-select" id="typeFilter">
+            <option value="">Tous les types</option>
+            <option value="regional"      {{ app.request.get('type') == 'regional'      ? 'selected' : '' }}>Régionale</option>
+            <option value="national"      {{ app.request.get('type') == 'national'      ? 'selected' : '' }}>Nationale</option>
+            <option value="international" {{ app.request.get('type') == 'international' ? 'selected' : '' }}>Internationale</option>
+        </select>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table courses-table mb-0">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Titre</th>
+                    <th>N° Course</th>
+                    <th>Titre / Type</th>
                     <th>Trajet</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Elu</th>
+                    <th>Statut</th>
+                    <th>Créé par</th>
                     <th>Chevalier</th>
+                    <th>Prix</th>
                     <th>Date</th>
-                    <th>Actions</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for course in courses %}
-                <tr>
-                    <td>#{{ course.id }}</td>
-                    <td>{{ course.title|slice(0,20) }}{% if course.title|length > 20 %}...{% endif %}</td>
+                <tr onclick="window.location='{{ path('admin_courses_show', {id: course.id}) }}'">
                     <td>
-                        <small>
-                            <i class="bi bi-geo-alt text-success"></i> {{ course.departureAddress|slice(0,15) }}...
-                            <br>
-                            <i class="bi bi-geo-alt-fill text-danger"></i> {{ course.deliveryAddress|slice(0,15) }}...
-                        </small>
+                        <span class="course-num">#{{ '%04d'|format(course.id) }}</span>
                     </td>
                     <td>
-                        {% if course.type == 'regional' %}
-                            <span class="badge bg-info">Regional</span>
-                        {% elseif course.type == 'national' %}
-                            <span class="badge bg-primary">National</span>
+                        <div class="course-title">{{ course.title|slice(0,28) }}{% if course.title|length > 28 %}…{% endif %}</div>
+                        <span class="course-type-badge type-{{ course.type }}">
+                            {% if course.type == 'regional' %}Régionale
+                            {% elseif course.type == 'national' %}Nationale
+                            {% else %}Internationale{% endif %}
+                        </span>
+                        {% if course.packageType %}
+                            <span class="course-type-badge ms-1" style="background:var(--coursia-gray-light);color:var(--coursia-text-muted);">{{ course.packageType }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="trajet-cell">
+                        <small><i class="bi bi-geo-alt-fill" style="color:#16A34A;"></i> Départ</small>
+                        <span class="addr">{{ course.departureAddress }}</span>
+                        <small class="mt-1"><i class="bi bi-geo-alt-fill" style="color:#EF4444;"></i> Arrivée</small>
+                        <span class="addr">{{ course.deliveryAddress }}</span>
+                    </td>
+                    <td>
+                        {% set s = course.status %}
+                        <span class="status-pill status-{{ s }}">
+                            {% if s == 'created' %}<i class="bi bi-circle"></i> Créée
+                            {% elseif s == 'accepted' %}<i class="bi bi-check-circle"></i> Acceptée
+                            {% elseif s == 'started' %}<i class="bi bi-arrow-repeat"></i> En cours
+                            {% elseif s == 'delivered' %}<i class="bi bi-box-seam"></i> Livrée
+                            {% elseif s == 'finished' %}<i class="bi bi-check-circle-fill"></i> Terminée
+                            {% elseif s == 'cancelled' %}<i class="bi bi-x-circle-fill"></i> Annulée
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;">
+                            <div class="chevalier-avatar" style="background:linear-gradient(135deg,#3B82F6,#6366F1);">
+                                {{ course.createdBy.firstName|slice(0,1)|upper }}
+                            </div>
+                            <span class="chevalier-name">{{ course.createdBy.firstName }} {{ course.createdBy.lastName|slice(0,1)|upper }}.</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if course.acceptedBy %}
+                            <div style="display:flex;align-items:center;">
+                                <div class="chevalier-avatar">{{ course.acceptedBy.firstName|slice(0,1)|upper }}</div>
+                                <span class="chevalier-name">{{ course.acceptedBy.firstName }} {{ course.acceptedBy.lastName|slice(0,1)|upper }}.</span>
+                            </div>
                         {% else %}
-                            <span class="badge bg-dark">International</span>
+                            <span style="color:var(--coursia-text-muted);font-size:12px;">Non assigné</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if course.status == 'created' %}
-                            <span class="badge bg-secondary">Cree</span>
-                        {% elseif course.status == 'accepted' %}
-                            <span class="badge bg-info">Accepte</span>
-                        {% elseif course.status == 'started' %}
-                            <span class="badge bg-primary">En cours</span>
-                        {% elseif course.status == 'delivered' %}
-                            <span class="badge bg-warning">Livre</span>
-                        {% elseif course.status == 'finished' %}
-                            <span class="badge bg-success">Termine</span>
-                        {% elseif course.status == 'cancelled' %}
-                            <span class="badge bg-danger">Annule</span>
+                        {% if prices[course.id] is defined %}
+                            <span class="price-cell">{{ prices[course.id]|number_format(0, ',', ' ') }} XOF</span>
+                        {% else %}
+                            <span class="price-cell no-price">En attente</span>
                         {% endif %}
                     </td>
-                    <td>{{ course.createdBy.firstName }}</td>
-                    <td>{{ course.acceptedBy ? course.acceptedBy.firstName : '-' }}</td>
-                    <td>{{ course.createdAt|date('d/m/Y') }}</td>
                     <td>
-                        <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="btn btn-sm btn-outline-primary">
+                        <div style="font-weight:600;font-size:13px;color:var(--coursia-dark);">{{ course.createdAt|date('d/m/Y') }}</div>
+                        <small style="color:var(--coursia-text-muted);">{{ course.createdAt|date('H:i') }}</small>
+                    </td>
+                    <td onclick="event.stopPropagation()">
+                        <a href="{{ path('admin_courses_show', {id: course.id}) }}" class="action-btn" title="Voir détails">
                             <i class="bi bi-eye"></i>
                         </a>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="10" class="text-center text-muted">Aucune course</td>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p class="mb-0">Aucune course pour le moment</p>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -95,23 +309,25 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
-document.getElementById('statusFilter').addEventListener('change', function() {
-    updateFilters();
-});
-document.getElementById('typeFilter').addEventListener('change', function() {
-    updateFilters();
-});
+document.getElementById('statusFilter').value = '{{ app.request.get('status', '') }}';
+document.getElementById('typeFilter').value   = '{{ app.request.get('type', '') }}';
 
 function updateFilters() {
     const status = document.getElementById('statusFilter').value;
-    const type = document.getElementById('typeFilter').value;
+    const type   = document.getElementById('typeFilter').value;
     let url = '{{ path('admin_courses') }}';
     const params = [];
     if (status) params.push('status=' + status);
-    if (type) params.push('type=' + type);
-    if (params.length > 0) url += '?' + params.join('&');
+    if (type)   params.push('type=' + type);
+    if (params.length) url += '?' + params.join('&');
     window.location.href = url;
 }
+
+document.getElementById('statusFilter').addEventListener('change', updateFilters);
+document.getElementById('typeFilter').addEventListener('change', updateFilters);
 </script>
 {% endblock %}

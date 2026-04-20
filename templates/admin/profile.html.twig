@@ -1,138 +1,602 @@
 {% extends 'admin/layout.html.twig' %}
 
 {% block title %}Mon profil - Coursia Admin{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
 
-{% block greeting %}Mon profil{% endblock %}
+{% block extra_css %}
+<style>
+    /* Tabs */
+    .profile-tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--coursia-gray-light);
+        border-radius: 14px;
+        padding: 5px;
+        margin-bottom: 28px;
+        width: fit-content;
+    }
+
+    .profile-tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--coursia-text-muted);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+    }
+
+    .profile-tab i { font-size: 16px; }
+
+    .profile-tab.active {
+        background: var(--coursia-white);
+        color: var(--coursia-orange);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .profile-tab:hover:not(.active) {
+        color: var(--coursia-text);
+    }
+
+    /* Tab panels */
+    .tab-panel {
+        display: none;
+        animation: fadeSlideIn 0.3s ease;
+    }
+
+    .tab-panel.active {
+        display: block;
+    }
+
+    @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Avatar */
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 36px;
+        flex-shrink: 0;
+    }
+
+    /* Profile banner */
+    .profile-banner {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 28px 32px;
+        flex-wrap: wrap;
+    }
+
+    .profile-avatar-wrap {
+        flex-shrink: 0;
+    }
+
+    .profile-banner-info {
+        flex-shrink: 0;
+    }
+
+    .profile-banner-info h4 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--coursia-dark);
+        margin: 0 0 8px 0;
+    }
+
+    .profile-banner-meta {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+        margin-left: auto;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .meta-item > i {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .meta-item small {
+        font-size: 12px;
+        color: var(--coursia-text-muted);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .meta-item .val {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--coursia-dark);
+    }
+
+    /* Form section headers */
+    .form-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--coursia-dark);
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-section-sub {
+        font-size: 13px;
+        color: var(--coursia-text-muted);
+        margin: 0 0 20px 0;
+    }
+
+    /* Settings styles */
+    .settings-card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--coursia-gray);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .settings-card-header i { font-size: 22px; color: var(--coursia-orange); }
+
+    .settings-card-header h5 {
+        font-weight: 700;
+        color: var(--coursia-dark);
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .settings-card-header p {
+        color: var(--coursia-text-muted);
+        font-size: 13px;
+        margin: 2px 0 0 0;
+    }
+
+    .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--coursia-gray-light);
+    }
+
+    .setting-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .setting-row:first-child { padding-top: 0; }
+
+    .setting-label h6 { font-weight: 600; color: var(--coursia-dark); margin: 0 0 2px 0; font-size: 14px; }
+    .setting-label p  { color: var(--coursia-text-muted); font-size: 12px; margin: 0; }
+
+    .custom-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .custom-switch input { opacity: 0; width: 0; height: 0; }
+
+    .custom-switch .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--coursia-gray);
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+
+    .custom-switch .slider::after {
+        content: '';
+        position: absolute;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: white;
+        top: 3px; left: 3px;
+        transition: 0.3s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .custom-switch input:checked + .slider { background: var(--coursia-orange); }
+    .custom-switch input:checked + .slider::after { transform: translateX(22px); }
+
+    .input-suffix { position: relative; }
+    .input-suffix .suffix {
+        position: absolute; right: 14px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--coursia-text-muted); font-size: 13px; font-weight: 600;
+    }
+    .input-suffix input { padding-right: 50px; }
+
+    .sub-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid var(--coursia-gray);
+        margin-bottom: 24px;
+    }
+
+    .sub-tab {
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--coursia-text-muted);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s;
+    }
+
+    .sub-tab.active { color: var(--coursia-orange); border-bottom-color: var(--coursia-orange); }
+    .sub-tab:hover:not(.active) { color: var(--coursia-text); }
+
+    .sub-panel { display: none; }
+    .sub-panel.active { display: block; animation: fadeSlideIn 0.25s ease; }
+
+    /* ===== Typographie uniformisée ===== */
+    #tab-profil .card-body h4,
+    #tab-profil .card-body h5 {
+        font-size: 18px !important;
+    }
+
+    #tab-profil .card-body p,
+    #tab-profil .card-body small,
+    #tab-profil .card-body .form-label,
+    #tab-profil .card-body label {
+        font-size: 14px !important;
+    }
+
+    #tab-profil .card-body .form-control,
+    #tab-profil .card-body .form-select {
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+
+    #tab-profil .info-label {
+        font-size: 13px !important;
+        color: var(--coursia-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    #tab-profil .info-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--coursia-dark);
+        margin-top: 2px;
+    }
+
+    #tab-profil .profile-meta small {
+        font-size: 13px !important;
+        color: var(--coursia-text-muted);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    #tab-profil .profile-meta .val {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--coursia-dark);
+    }
+
+    #tab-settings .card-body,
+    #tab-settings .settings-card-body {
+        font-size: 14px;
+    }
+
+    #tab-settings .form-label,
+    #tab-settings label {
+        font-size: 13px !important;
+    }
+
+    #tab-settings .form-control,
+    #tab-settings .form-select {
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+
+    #tab-settings .setting-label h6 { font-size: 15px !important; }
+    #tab-settings .setting-label p  { font-size: 13px !important; }
+
+    .sub-tab { font-size: 14px; }
+    .profile-tab { font-size: 14px; }
+</style>
+{% endblock %}
 
 {% block content %}
+
 {% if error %}
     <div class="alert alert-danger mb-4">
         <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
     </div>
 {% endif %}
-
 {% if success %}
     <div class="alert alert-success mb-4">
         <i class="bi bi-check-circle me-2"></i>{{ success }}
     </div>
 {% endif %}
 
-<div class="row">
-    <!-- Carte profil -->
-    <div class="col-lg-4 mb-4">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <div style="width: 90px; height: 90px; background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 36px; margin: 0 auto 20px;">
-                    {{ admin.firstName|slice(0,1)|upper }}
-                </div>
-                <h4 style="font-weight: 700; color: var(--coursia-dark); margin-bottom: 4px;">{{ admin.firstName }} {{ admin.lastName }}</h4>
-                <p style="color: var(--coursia-text-muted); margin-bottom: 16px;">{{ admin.email }}</p>
-                <span class="badge" style="background: #FEF3C7; color: #D97706; font-size: 13px; padding: 8px 16px;">
+<!-- Onglets principaux -->
+<div class="profile-tabs">
+    <button class="profile-tab active" onclick="switchTab('profil', this)">
+        <i class="bi bi-person-circle"></i> Mon profil
+    </button>
+    <button class="profile-tab" onclick="switchTab('settings', this)">
+        <i class="bi bi-gear"></i> Paramètres
+    </button>
+</div>
+
+<!-- ===== ONGLET MON PROFIL ===== -->
+<div id="tab-profil" class="tab-panel active">
+
+    <!-- Banner profil pleine largeur -->
+    <div class="card mb-4">
+        <div class="card-body profile-banner">
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar">{{ admin.firstName|slice(0,1)|upper }}</div>
+            </div>
+            <div class="profile-banner-info">
+                <h4>{{ admin.firstName }} {{ admin.lastName }}</h4>
+                <span class="badge" style="background:#FEF3C7;color:#D97706;font-size:13px;padding:6px 14px;">
                     <i class="bi bi-shield-check me-1"></i> Administrateur
                 </span>
-                <hr style="margin: 24px 0; border-color: var(--coursia-gray);">
-                <div class="text-start" style="padding: 0 10px;">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <i class="bi bi-telephone" style="font-size: 18px; color: var(--coursia-text-muted); width: 24px;"></i>
-                        <div>
-                            <small style="color: var(--coursia-text-muted);">Téléphone</small>
-                            <div style="font-weight: 600; color: var(--coursia-dark);">{{ admin.phone }}</div>
-                        </div>
+            </div>
+            <div class="profile-banner-meta">
+                <div class="meta-item">
+                    <i class="bi bi-telephone" style="color:var(--coursia-orange);"></i>
+                    <div>
+                        <small>Téléphone</small>
+                        <div class="val">{{ admin.phone }}</div>
                     </div>
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <i class="bi bi-envelope" style="font-size: 18px; color: var(--coursia-text-muted); width: 24px;"></i>
-                        <div>
-                            <small style="color: var(--coursia-text-muted);">Email</small>
-                            <div style="font-weight: 600; color: var(--coursia-dark);">{{ admin.email }}</div>
-                        </div>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-envelope" style="color:var(--coursia-orange);"></i>
+                    <div>
+                        <small>Email</small>
+                        <div class="val">{{ admin.email }}</div>
                     </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="bi bi-calendar-check" style="font-size: 18px; color: var(--coursia-text-muted); width: 24px;"></i>
-                        <div>
-                            <small style="color: var(--coursia-text-muted);">Membre depuis</small>
-                            <div style="font-weight: 600; color: var(--coursia-dark);">{{ admin.createdAt|date('d/m/Y') }}</div>
-                        </div>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-calendar-check" style="color:var(--coursia-orange);"></i>
+                    <div>
+                        <small>Membre depuis</small>
+                        <div class="val">{{ admin.createdAt|date('d/m/Y') }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Formulaires -->
-    <div class="col-lg-8">
+    <!-- Deux formulaires côte à côte -->
+    <div class="row g-4">
         <!-- Informations personnelles -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 style="font-weight: 700; color: var(--coursia-dark); margin-bottom: 4px;">
-                    <i class="bi bi-person me-2" style="color: var(--coursia-orange);"></i>
-                    Informations personnelles
-                </h5>
-                <p style="color: var(--coursia-text-muted); font-size: 13px; margin-bottom: 24px;">Modifiez vos informations de base.</p>
-
-                <form method="POST" action="{{ path('admin_profile') }}">
-                    <input type="hidden" name="action" value="update_info">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Prénom</label>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="form-section-title">
+                        <i class="bi bi-person me-2" style="color:var(--coursia-orange);"></i>Informations personnelles
+                    </h5>
+                    <p class="form-section-sub">Modifiez vos informations de base.</p>
+                    <form method="POST" action="{{ path('admin_profile') }}">
+                        <input type="hidden" name="action" value="update_info">
+                        <div class="mb-3">
+                            <label class="form-label">Prénom</label>
                             <input type="text" name="firstName" class="form-control" value="{{ admin.firstName }}" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Nom</label>
+                        <div class="mb-3">
+                            <label class="form-label">Nom</label>
                             <input type="text" name="lastName" class="form-control" value="{{ admin.lastName }}" required>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ admin.email }}" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$" title="L'adresse email doit être au format identifiant@gmail.com" required>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ admin.email }}" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Téléphone</label>
+                        <div class="mb-4">
+                            <label class="form-label">Téléphone</label>
                             <input type="text" name="phone" class="form-control" value="{{ admin.phone }}" required>
                         </div>
-                    </div>
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-coursia">
-                            <i class="bi bi-check2 me-1"></i> Enregistrer les modifications
-                        </button>
-                    </div>
-                </form>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-coursia">
+                                <i class="bi bi-check2 me-1"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- Modifier le mot de passe -->
-        <div class="card">
-            <div class="card-body">
-                <h5 style="font-weight: 700; color: var(--coursia-dark); margin-bottom: 4px;">
-                    <i class="bi bi-lock me-2" style="color: var(--coursia-orange);"></i>
-                    Modifier le mot de passe
-                </h5>
-                <p style="color: var(--coursia-text-muted); font-size: 13px; margin-bottom: 24px;">Pour votre sécurité, choisissez un mot de passe fort.</p>
-
-                <form method="POST" action="{{ path('admin_profile') }}">
-                    <input type="hidden" name="action" value="update_password">
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Mot de passe actuel</label>
-                        <input type="password" name="currentPassword" class="form-control" placeholder="Entrez votre mot de passe actuel" required>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Nouveau mot de passe</label>
+        <!-- Mot de passe -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="form-section-title">
+                        <i class="bi bi-lock me-2" style="color:var(--coursia-orange);"></i>Modifier le mot de passe
+                    </h5>
+                    <p class="form-section-sub">Pour votre sécurité, choisissez un mot de passe fort.</p>
+                    <form method="POST" action="{{ path('admin_profile') }}">
+                        <input type="hidden" name="action" value="update_password">
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" name="currentPassword" class="form-control" placeholder="Mot de passe actuel" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nouveau mot de passe</label>
                             <input type="password" name="newPassword" class="form-control" placeholder="Minimum 6 caractères" required minlength="6">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--coursia-text-muted);">Confirmer le nouveau mot de passe</label>
+                        <div class="mb-4">
+                            <label class="form-label">Confirmer le mot de passe</label>
                             <input type="password" name="confirmPassword" class="form-control" placeholder="Confirmez le mot de passe" required minlength="6">
                         </div>
-                    </div>
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-coursia">
-                            <i class="bi bi-shield-lock me-1"></i> Modifier le mot de passe
-                        </button>
-                    </div>
-                </form>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-coursia">
+                                <i class="bi bi-shield-lock me-1"></i> Modifier le mot de passe
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ===== ONGLET PARAMÈTRES ===== -->
+<div id="tab-settings" class="tab-panel">
+
+    <!-- Sous-onglets paramètres -->
+    <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('general', this)"><i class="bi bi-sliders me-1"></i>Général</button>
+        <button class="sub-tab" onclick="switchSubTab('notifications', this)"><i class="bi bi-bell me-1"></i>Notifications</button>
+        <button class="sub-tab" onclick="switchSubTab('maintenance', this)"><i class="bi bi-tools me-1"></i>Maintenance</button>
+    </div>
+
+    <!-- Général -->
+    <div id="sub-general" class="sub-panel active">
+        <form method="POST" action="{{ path('admin_settings') }}">
+            <input type="hidden" name="action" value="update_general">
+            <div class="card">
+                <div class="settings-card-header">
+                    <i class="bi bi-sliders"></i>
+                    <div><h5>Paramètres généraux</h5><p>Configurez les informations de base de la plateforme.</p></div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--coursia-text-muted);">Nom de la plateforme</label>
+                            <input type="text" name="platform_name" class="form-control" value="{{ settings is defined ? settings.platform_name : 'Coursia' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--coursia-text-muted);">Devise</label>
+                            <select name="currency" class="form-select">
+                                <option value="XOF" {{ (settings is defined and settings.currency == 'XOF') ? 'selected' : '' }}>XOF (Franc CFA)</option>
+                                <option value="EUR" {{ (settings is defined and settings.currency == 'EUR') ? 'selected' : '' }}>EUR (Euro)</option>
+                                <option value="USD" {{ (settings is defined and settings.currency == 'USD') ? 'selected' : '' }}>USD (Dollar)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--coursia-text-muted);">Email de contact</label>
+                            <input type="email" name="contact_email" class="form-control" value="{{ settings is defined ? settings.contact_email : '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--coursia-text-muted);">Téléphone de contact</label>
+                            <input type="text" name="contact_phone" class="form-control" value="{{ settings is defined ? settings.contact_phone : '' }}">
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-coursia"><i class="bi bi-check2 me-1"></i>Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Notifications -->
+    <div id="sub-notifications" class="sub-panel">
+        <form method="POST" action="{{ path('admin_settings') }}">
+            <input type="hidden" name="action" value="update_notifications">
+            <div class="card">
+                <div class="settings-card-header">
+                    <i class="bi bi-bell"></i>
+                    <div><h5>Notifications</h5><p>Gérez les notifications que vous recevez.</p></div>
+                </div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <div class="setting-label"><h6>Notifications par email</h6><p>Recevoir les notifications importantes par email</p></div>
+                        <label class="custom-switch">
+                            <input type="checkbox" name="email_notifications" {{ (settings is defined and settings.email_notifications) ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-label"><h6>Nouvelles demandes chevalier</h6><p>Être notifié quand un chevalier fait une demande</p></div>
+                        <label class="custom-switch">
+                            <input type="checkbox" name="new_chevalier_notification" {{ (settings is defined and settings.new_chevalier_notification) ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-label"><h6>Nouvelles courses</h6><p>Être notifié quand une nouvelle course est créée</p></div>
+                        <label class="custom-switch">
+                            <input type="checkbox" name="new_course_notification" {{ (settings is defined and settings.new_course_notification) ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-coursia"><i class="bi bi-check2 me-1"></i>Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Maintenance -->
+    <div id="sub-maintenance" class="sub-panel">
+        <form method="POST" action="{{ path('admin_settings') }}">
+            <input type="hidden" name="action" value="update_maintenance">
+            <div class="card">
+                <div class="settings-card-header">
+                    <i class="bi bi-tools"></i>
+                    <div><h5>Mode maintenance</h5><p>Activez le mode maintenance pour empêcher l'accès à la plateforme.</p></div>
+                </div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <div class="setting-label"><h6>Activer le mode maintenance</h6><p>La plateforme sera inaccessible pour les utilisateurs pendant la maintenance</p></div>
+                        <label class="custom-switch">
+                            <input type="checkbox" name="maintenance_mode" {{ (settings is defined and settings.maintenance_mode) ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-coursia"><i class="bi bi-check2 me-1"></i>Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.profile-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        btn.classList.add('active');
+        history.replaceState(null, '', '#' + tabId);
+    }
+
+    function switchSubTab(subId, btn) {
+        document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('sub-' + subId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // Ouvrir directement le bon onglet si hash dans l'URL
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'settings') {
+        document.querySelectorAll('.profile-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-settings').classList.add('active');
+        document.querySelectorAll('.profile-tab')[1].classList.add('active');
+    }
+</script>
 {% endblock %}

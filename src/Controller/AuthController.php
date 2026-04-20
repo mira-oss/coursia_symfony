@@ -74,6 +74,12 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Cet email est déjà associé à un compte'], 400);
         }
 
+        // Validation format téléphone : 10 chiffres commençant par 01
+        $phoneDigits = preg_replace('/\D/', '', $phone);
+        if (!preg_match('/^01\d{8}$/', $phoneDigits)) {
+            return $this->json(['error' => 'Le numéro de téléphone doit contenir 10 chiffres et commencer par 01'], 400);
+        }
+
         $existingPhone = $this->em->getRepository(User::class)->findOneBy(['phone' => $phone]);
         if ($existingPhone) {
             return $this->json(['error' => 'Ce numéro de téléphone est déjà associé à un compte'], 400);
@@ -134,7 +140,58 @@ class AuthController extends AbstractController
             'birthDate' => $user->getBirthDate(),
             'phone' => $user->getPhone(),
             'nationality' => $user->getNationality(),
-            'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s')
+            'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
+            'profilePhoto' => $user->getProfilePhoto()
+                ? '/uploads/profile_photos/' . $user->getProfilePhoto()
+                : null,
+        ]);
+    }
+
+    // ================= UPLOAD PHOTO =================
+    #[Route('/upload-photo', name: 'api_upload_photo', methods: ['POST'])]
+    public function uploadPhoto(Request $request, #[CurrentUser] ?User $user): JsonResponse
+    {
+        if (!$user) {
+            return $this->json(['error' => 'Non authentifié'], 401);
+        }
+
+        $file = $request->files->get('photo');
+        if (!$file) {
+            return $this->json(['error' => 'Aucune photo fournie'], 400);
+        }
+
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            return $this->json(['error' => 'Format non supporté. Utilisez JPG, PNG ou WebP'], 400);
+        }
+
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            return $this->json(['error' => 'La photo ne doit pas dépasser 5 Mo'], 400);
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_photos';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        // Supprimer l'ancienne photo
+        if ($user->getProfilePhoto()) {
+            $oldFile = $uploadDir . '/' . $user->getProfilePhoto();
+            if (file_exists($oldFile)) {
+                unlink($oldFile);
+            }
+        }
+
+        $ext = $file->guessExtension() ?? 'jpg';
+        $fileName = 'user_' . $user->getId() . '_' . uniqid() . '.' . $ext;
+        $file->move($uploadDir, $fileName);
+
+        $user->setProfilePhoto($fileName);
+        $this->em->flush();
+
+        return $this->json([
+            'message' => 'Photo mise à jour avec succès',
+            'profilePhoto' => '/uploads/profile_photos/' . $fileName,
         ]);
     }
 
@@ -155,6 +212,10 @@ class AuthController extends AbstractController
             $user->setLastName($data['lastName']);
         }
         if (isset($data['phone'])) {
+            $phoneDigits = preg_replace('/\D/', '', $data['phone']);
+            if (!preg_match('/^01\d{8}$/', $phoneDigits)) {
+                return $this->json(['error' => 'Le numéro de téléphone doit contenir 10 chiffres et commencer par 01'], 400);
+            }
             $user->setPhone($data['phone']);
         }
 

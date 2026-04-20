@@ -1,0 +1,306 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Statistiques - Coursia Admin{% endblock %}
+{% block page_title %}Statistiques{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-summary-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+
+    .stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--coursia-white);
+        border: 1px solid var(--coursia-gray);
+        border-radius: 12px;
+        padding: 14px 20px;
+        flex: 1;
+        min-width: 150px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .stat-pill-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .stat-pill-label {
+        font-size: 12px;
+        color: var(--coursia-text-muted);
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .stat-pill-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--coursia-dark);
+        line-height: 1;
+    }
+
+    .chart-card {
+        background: var(--coursia-white);
+        border: 1px solid var(--coursia-gray);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        padding: 28px;
+        height: 100%;
+    }
+
+    .chart-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--coursia-dark);
+        margin-bottom: 4px;
+    }
+
+    .chart-sub {
+        font-size: 13px;
+        color: var(--coursia-text-muted);
+        margin-bottom: 24px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .legend-text { flex: 1; font-size: 13px; color: var(--coursia-text-muted); }
+    .legend-value { font-size: 13px; font-weight: 600; color: var(--coursia-dark); }
+
+    [data-theme="dark"] .legend-text { color: #E5E7EB !important; }
+    [data-theme="dark"] .legend-value { color: #F9FAFB !important; }
+    [data-theme="dark"] .stat-pill-value { color: #F9FAFB !important; }
+    [data-theme="dark"] .chart-title { color: #F9FAFB !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Résumé chiffres clés -->
+<div class="stat-summary-row">
+    <div class="stat-pill">
+        <div class="stat-pill-icon" style="background:#FFF7ED;color:#F97316;"><i class="bi bi-truck"></i></div>
+        <div>
+            <div class="stat-pill-label">Total courses</div>
+            <div class="stat-pill-value">{{ stats.totalCourses }}</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon" style="background:#DCFCE7;color:#16A34A;"><i class="bi bi-check-circle"></i></div>
+        <div>
+            <div class="stat-pill-label">Terminées</div>
+            <div class="stat-pill-value">{{ stats.coursesFinished }}</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon" style="background:#FFF7ED;color:#F97316;"><i class="bi bi-arrow-repeat"></i></div>
+        <div>
+            <div class="stat-pill-label">En cours</div>
+            <div class="stat-pill-value">{{ stats.coursesInProgress }}</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon" style="background:#FEE2E2;color:#DC2626;"><i class="bi bi-x-circle"></i></div>
+        <div>
+            <div class="stat-pill-label">Annulées</div>
+            <div class="stat-pill-value">{{ stats.coursesCancelled }}</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon" style="background:#DBEAFE;color:#2563EB;"><i class="bi bi-people"></i></div>
+        <div>
+            <div class="stat-pill-label">Utilisateurs</div>
+            <div class="stat-pill-value">{{ stats.totalUsers }}</div>
+        </div>
+    </div>
+    <div class="stat-pill">
+        <div class="stat-pill-icon" style="background:#EDE9FE;color:#7C3AED;"><i class="bi bi-shield-check"></i></div>
+        <div>
+            <div class="stat-pill-label">Chevaliers</div>
+            <div class="stat-pill-value">{{ stats.totalChevaliers }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphes -->
+<div class="row g-4">
+
+    <!-- Bar chart : courses par statut -->
+    <div class="col-lg-7">
+        <div class="chart-card">
+            <div class="chart-title">Courses par statut</div>
+            <div class="chart-sub">Répartition de toutes les courses selon leur avancement</div>
+            <canvas id="coursesChart" height="230"></canvas>
+        </div>
+    </div>
+
+    <!-- Doughnut : utilisateurs -->
+    <div class="col-lg-5">
+        <div class="chart-card">
+            <div class="chart-title">Répartition des utilisateurs</div>
+            <div class="chart-sub">Chevaliers, élus et demandes en attente</div>
+            <div style="max-width:200px; margin: 10px auto 24px;">
+                <canvas id="usersChart"></canvas>
+            </div>
+            <div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#F97316;"></div>
+                    <span class="legend-text">Chevaliers</span>
+                    <span class="legend-value">{{ stats.totalChevaliers }}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#16A34A;"></div>
+                    <span class="legend-text">Élus</span>
+                    <span class="legend-value">{{ stats.totalUsers - stats.totalChevaliers }}</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#FBBF24;"></div>
+                    <span class="legend-text">Demandes en attente</span>
+                    <span class="legend-value">{{ stats.pendingChevaliers }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bar horizontal : détail statuts -->
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-title">Détail des statuts</div>
+            <div class="chart-sub">Nombre exact de courses pour chaque statut</div>
+            <canvas id="statusDetailChart" height="100"></canvas>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#9CA3AF' : '#6B7280';
+
+// Bar chart courses par statut
+new Chart(document.getElementById('coursesChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Créées', 'Acceptées', 'En cours', 'Livrées', 'Terminées', 'Annulées'],
+        datasets: [{
+            label: 'Courses',
+            data: [
+                {{ stats.coursesCreated }},
+                {{ stats.coursesAccepted }},
+                {{ stats.coursesStarted }},
+                {{ stats.coursesDelivered }},
+                {{ stats.coursesFinished }},
+                {{ stats.coursesCancelled }}
+            ],
+            backgroundColor: [
+                'rgba(156,163,175,0.85)',
+                'rgba(96,165,250,0.85)',
+                'rgba(249,115,22,0.85)',
+                'rgba(251,191,36,0.85)',
+                'rgba(22,163,74,0.85)',
+                'rgba(239,68,68,0.85)'
+            ],
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1, precision: 0 }, beginAtZero: true }
+        }
+    }
+});
+
+// Doughnut utilisateurs
+new Chart(document.getElementById('usersChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Chevaliers', 'Élus', 'En attente'],
+        datasets: [{
+            data: [
+                {{ stats.totalChevaliers }},
+                {{ stats.totalUsers - stats.totalChevaliers }},
+                {{ stats.pendingChevaliers }}
+            ],
+            backgroundColor: ['#F97316', '#16A34A', '#FBBF24'],
+            borderWidth: 0,
+            hoverOffset: 6
+        }]
+    },
+    options: {
+        cutout: '70%',
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+        }
+    }
+});
+
+// Bar horizontal détail statuts
+new Chart(document.getElementById('statusDetailChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Créées', 'Acceptées', 'Démarrées', 'Livrées', 'Terminées', 'Annulées'],
+        datasets: [{
+            label: 'Nombre',
+            data: [
+                {{ stats.coursesCreated }},
+                {{ stats.coursesAccepted }},
+                {{ stats.coursesStarted }},
+                {{ stats.coursesDelivered }},
+                {{ stats.coursesFinished }},
+                {{ stats.coursesCancelled }}
+            ],
+            backgroundColor: [
+                'rgba(156,163,175,0.85)',
+                'rgba(96,165,250,0.85)',
+                'rgba(249,115,22,0.85)',
+                'rgba(251,191,36,0.85)',
+                'rgba(22,163,74,0.85)',
+                'rgba(239,68,68,0.85)'
+            ],
+            borderRadius: 6,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1, precision: 0 }, beginAtZero: true },
+            y: { grid: { display: false }, ticks: { color: textColor } }
+        }
+    }
+});
+</script>
+{% endblock %}

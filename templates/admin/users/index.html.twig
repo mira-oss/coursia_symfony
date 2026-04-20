@@ -21,7 +21,6 @@
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nom</th>
                     <th>Email</th>
                     <th>Telephone</th>
@@ -34,7 +33,6 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>#{{ user.id }}</td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="bg-{{ user.role == 'admin' ? 'danger' : (user.role == 'chevalier' ? 'success' : 'primary') }} text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
@@ -66,7 +64,10 @@
                             <span class="badge bg-secondary">Inactif</span>
                         {% endif %}
                     </td>
-                    <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                    <td>
+                        <span>{{ user.createdAt|date('d/m/Y') }}</span><br>
+                        <small class="text-muted">{{ user.createdAt|date('H:i') }}</small>
+                    </td>
                     <td>
                         <div class="btn-group">
                             <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir">

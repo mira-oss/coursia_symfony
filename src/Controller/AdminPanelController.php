@@ -161,10 +161,21 @@ class AdminPanelController extends AbstractController
 
         // Statistiques globales
         $stats = [
-            'totalUsers' => $this->em->getRepository(User::class)->count([]),
-            'totalChevaliers' => $this->em->getRepository(User::class)->count(['role' => 'chevalier']),
+            'totalUsers'        => $this->em->getRepository(User::class)->count([]),
+            'totalChevaliers'   => $this->em->getRepository(User::class)->count(['role' => 'chevalier']),
             'pendingChevaliers' => $this->em->getRepository(ChevalierRequest::class)->count(['status' => 'pending']),
-            'totalCourses' => $this->em->getRepository(Course::class)->count([]),
+            'totalCourses'      => $this->em->getRepository(Course::class)->count([]),
+            'coursesCreated'    => $this->em->getRepository(Course::class)->count(['status' => 'created']),
+            'coursesAccepted'   => $this->em->getRepository(Course::class)->count(['status' => 'accepted']),
+            'coursesStarted'    => $this->em->getRepository(Course::class)->count(['status' => 'started']),
+            'coursesDelivered'  => $this->em->getRepository(Course::class)->count(['status' => 'delivered']),
+            'coursesFinished'   => $this->em->getRepository(Course::class)->count(['status' => 'finished']),
+            'coursesCancelled'  => $this->em->getRepository(Course::class)->count(['status' => 'cancelled']),
+            'coursesInProgress' => $this->em->getRepository(Course::class)->createQueryBuilder('c')
+                ->select('COUNT(c.id)')
+                ->where('c.status IN (:statuses)')
+                ->setParameter('statuses', ['accepted', 'started', 'delivered'])
+                ->getQuery()->getSingleScalarResult(),
         ];
 
         // Courses selon la periode
@@ -217,6 +228,40 @@ class AdminPanelController extends AbstractController
             'all' => null,
             default => new \DateTimeImmutable('-30 days'),
         };
+    }
+
+    // ================= STATISTICS =================
+    #[Route('/statistics', name: 'admin_statistics')]
+    public function statistics(SessionInterface $session): Response
+    {
+        $admin = $this->getAdmin($session);
+        if (!$admin) {
+            return $this->redirectToRoute('admin_login');
+        }
+
+        $stats = [
+            'totalUsers'        => $this->em->getRepository(User::class)->count([]),
+            'totalChevaliers'   => $this->em->getRepository(User::class)->count(['role' => 'chevalier']),
+            'pendingChevaliers' => $this->em->getRepository(ChevalierRequest::class)->count(['status' => 'pending']),
+            'totalCourses'      => $this->em->getRepository(Course::class)->count([]),
+            'coursesCreated'    => $this->em->getRepository(Course::class)->count(['status' => 'created']),
+            'coursesAccepted'   => $this->em->getRepository(Course::class)->count(['status' => 'accepted']),
+            'coursesStarted'    => $this->em->getRepository(Course::class)->count(['status' => 'started']),
+            'coursesDelivered'  => $this->em->getRepository(Course::class)->count(['status' => 'delivered']),
+            'coursesFinished'   => $this->em->getRepository(Course::class)->count(['status' => 'finished']),
+            'coursesCancelled'  => $this->em->getRepository(Course::class)->count(['status' => 'cancelled']),
+            'coursesInProgress' => $this->em->getRepository(Course::class)->createQueryBuilder('c')
+                ->select('COUNT(c.id)')
+                ->where('c.status IN (:statuses)')
+                ->setParameter('statuses', ['accepted', 'started', 'delivered'])
+                ->getQuery()->getSingleScalarResult(),
+        ];
+
+        return $this->render('admin/statistics.html.twig', [
+            'admin'  => $admin,
+            'stats'  => $stats,
+            'pending_chevaliers_count' => $stats['pendingChevaliers'],
+        ]);
     }
 
     // ================= USERS =================
@@ -547,9 +592,21 @@ class AdminPanelController extends AbstractController
         $courses = $this->em->getRepository(Course::class)
             ->findBy($criteria, ['createdAt' => 'DESC']);
 
+        // Prix accepté pour chaque course
+        $conn = $this->em->getConnection();
+        $priceRows = $conn->fetchAllAssociative(
+            'SELECT co.course_id, co.price FROM course_offers co WHERE co.status = :s',
+            ['s' => 'accepted']
+        );
+        $prices = [];
+        foreach ($priceRows as $row) {
+            $prices[$row['course_id']] = $row['price'];
+        }
+
         return $this->render('admin/courses/index.html.twig', [
             'admin' => $admin,
             'courses' => $courses,
+            'prices' => $prices,
             'pending_chevaliers_count' => $this->getPendingChevalierCount()
         ]);
     }

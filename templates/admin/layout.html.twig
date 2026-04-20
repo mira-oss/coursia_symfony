@@ -15,6 +15,9 @@
             --coursia-orange: #F97316;
             --coursia-orange-hover: #EA580C;
             --coursia-orange-light: #FFF7ED;
+            --coursia-green: #16A34A;
+            --coursia-green-hover: #15803D;
+            --coursia-green-light: #DCFCE7;
             --coursia-dark: #1F2937;
             --coursia-gray: #E5E7EB;
             --coursia-gray-light: #F3F4F6;
@@ -299,6 +302,21 @@
             flex-direction: column;
             overflow-y: auto;
             min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--coursia-gray) transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: var(--coursia-gray);
+            border-radius: 10px;
         }
 
         .nav-section {
@@ -472,19 +490,46 @@
 
         .top-header {
             background: var(--coursia-white);
-            padding: 18px 35px;
+            padding: 10px 20px 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--coursia-gray);
             transition: background-color 0.3s, border-color 0.3s;
+            gap: 14px;
         }
 
         .greeting {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--coursia-dark);
             letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .header-welcome {
+            flex: 1;
+        }
+
+        .header-welcome .welcome-day {
+            font-size: 12px;
+            color: var(--coursia-text-muted);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .header-welcome .welcome-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--coursia-dark);
+            letter-spacing: -0.4px;
+            line-height: 1.2;
+        }
+
+        .header-welcome .welcome-sub {
+            font-size: 13px;
+            color: var(--coursia-text-muted);
+            margin-top: 2px;
         }
 
         .header-right {
@@ -649,8 +694,8 @@
         }
 
         .notif-icon.green {
-            background: #D1FAE5;
-            color: #059669;
+            background: var(--coursia-green-light);
+            color: var(--coursia-green);
         }
 
         .notif-content {
@@ -891,6 +936,22 @@
         }
 
         /* Stat Cards */
+        .stat-card-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            height: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card-link:hover .stat-card {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
         .stat-card {
             background: var(--coursia-white);
             border-radius: 16px;
@@ -898,7 +959,15 @@
             display: flex;
             align-items: center;
             gap: 18px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            height: 100%;
+            min-height: 120px;
+            border: 1px solid var(--coursia-gray);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         }
 
         .stat-icon {
@@ -917,8 +986,8 @@
         }
 
         .stat-icon.green {
-            background: #D1FAE5;
-            color: #059669;
+            background: var(--coursia-green-light);
+            color: var(--coursia-green);
         }
 
         .stat-icon.blue {
@@ -982,11 +1051,19 @@
 
         /* Cards */
         .card {
-            border: none;
+            border: 1px solid var(--coursia-gray);
             border-radius: 16px;
-            box-shadow: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
             background: var(--coursia-white);
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .card-header {
+            border-bottom: 1px solid var(--coursia-gray) !important;
+            padding: 16px 24px;
+            font-weight: 600;
+            font-size: 15px;
+            background: var(--coursia-white) !important;
         }
 
         .card-body {
@@ -1000,25 +1077,25 @@
 
         .table th {
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--coursia-text-muted);
-            border-bottom: 1px solid var(--coursia-gray);
+            border-bottom: 2px solid var(--coursia-gray) !important;
             padding: 14px 16px;
-            background: transparent;
+            background: var(--coursia-gray-light);
         }
 
         .table td {
             padding: 16px;
             vertical-align: middle;
-            border-bottom: 1px solid var(--coursia-gray-light);
+            border-bottom: 1px solid var(--coursia-gray) !important;
             font-size: 14px;
             color: var(--coursia-text);
         }
 
         .table tbody tr:last-child td {
-            border-bottom: none;
+            border-bottom: none !important;
         }
 
         .table tbody tr:hover {
@@ -1064,8 +1141,8 @@
         }
 
         .badge-approved, .badge-active, .badge-success {
-            background: #D1FAE5;
-            color: #059669;
+            background: var(--coursia-green-light);
+            color: var(--coursia-green);
         }
 
         .badge-rejected, .badge-inactive, .badge-danger {
@@ -1360,7 +1437,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ path('admin_users') }}" class="nav-link {% if 'admin_users' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <a href="{{ path('admin_statistics') }}" class="nav-link {% if app.request.attributes.get('_route') == 'admin_statistics' %}active{% endif %}">
                             <i class="bi bi-bar-chart"></i>
                             Statistiques
                         </a>
@@ -1404,12 +1481,6 @@
                 </ul>
             </div>
 
-            <!-- Promo Card -->
-            <div class="promo-card">
-                <h4>Besoin d'aide?</h4>
-                <p>Consultez la documentation ou contactez le support.</p>
-                <a href="#" class="promo-btn">Documentation</a>
-            </div>
         </nav>
     </aside>
 
@@ -1422,7 +1493,9 @@
             <button class="menu-toggle" onclick="toggleSidebar()">
                 <i class="bi bi-list"></i>
             </button>
-            <h1 class="greeting">{% block greeting %}Bonjour{% endblock %}{% if admin is defined and admin %}, {{ admin.firstName }}!{% else %}!{% endif %}</h1>
+            {% block header_left %}
+            <h1 class="greeting">{% block page_title %}Dashboard{% endblock %}</h1>
+            {% endblock %}
 
             <div class="header-right">
                 <form action="{{ path('admin_search') }}" method="GET" class="search-box">
@@ -1497,7 +1570,7 @@
                                 <i class="bi bi-person"></i>
                                 Mon profil
                             </a>
-                            <a href="{{ path('admin_settings') }}" class="profile-dropdown-item">
+                            <a href="{{ path('admin_profile') }}#settings" class="profile-dropdown-item">
                                 <i class="bi bi-gear"></i>
                                 Parametres
                             </a>

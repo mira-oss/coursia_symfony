@@ -45,51 +45,63 @@
         }
 
         .login-illustration {
-            background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%);
             flex: 0 0 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
             position: relative;
             overflow: hidden;
+            background: linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px;
         }
 
         .login-illustration::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            top: -60px; left: -40px;
+            width: 220px; height: 220px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
         }
 
-        .illustration-content {
+        .login-illustration::after {
+            content: '';
+            position: absolute;
+            bottom: -50px; right: -30px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+
+        .login-illustration img {
+            width: 80%;
+            max-width: 320px;
+            object-fit: contain;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 16px 32px rgba(0,0,0,0.2));
+        }
+
+        .login-illustration .brand {
             position: relative;
             z-index: 1;
             text-align: center;
+        }
+
+        .login-illustration .brand h2 {
+            font-size: 32px;
+            font-weight: 800;
             color: white;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.5px;
         }
 
-        .illustration-icon {
-            font-size: 100px;
-            margin-bottom: 25px;
-            opacity: 0.9;
-        }
-
-        .illustration-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .illustration-text {
-            font-size: 15px;
-            opacity: 0.9;
-            max-width: 280px;
-            line-height: 1.6;
+        .login-illustration .brand p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+            margin: 0;
         }
 
         .login-form-section {
@@ -98,67 +110,77 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: #FAFBFC;
-        }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 40px;
-        }
-
-        .brand-logo i {
-            font-size: 28px;
-            color: var(--coursia-orange);
-        }
-
-        .brand-logo span {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--coursia-dark);
+            background: linear-gradient(160deg, #DBEAFE 0%, #BFDBFE 100%);
         }
 
         .login-title {
-            font-size: 22px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
             color: var(--coursia-dark);
             margin-bottom: 8px;
+            text-align: center;
         }
 
         .login-subtitle {
             color: #6B7280;
             font-size: 14px;
             margin-bottom: 35px;
+            text-align: center;
         }
 
         .form-label {
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #6B7280;
-            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--coursia-dark);
+            margin-bottom: 8px;
+            display: block;
         }
 
         .form-control {
-            border: none;
-            border-bottom: 2px solid var(--coursia-gray);
-            border-radius: 0;
-            padding: 12px 0;
+            border: 1.5px solid var(--coursia-gray);
+            border-radius: 12px;
+            padding: 12px 16px;
             font-size: 14px;
-            transition: border-color 0.3s;
-            background: transparent;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: white;
+            width: 100%;
         }
 
         .form-control:focus {
-            box-shadow: none;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
             border-color: var(--coursia-orange);
-            background: transparent;
+            background: white;
+            outline: none;
         }
 
         .form-control::placeholder {
             color: #9CA3AF;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .form-control {
+            padding-right: 44px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9CA3AF;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .toggle-password:hover {
+            color: var(--coursia-orange);
         }
 
         .btn-coursia {
@@ -238,22 +260,15 @@
     <div class="login-container">
         <!-- Illustration Section -->
         <div class="login-illustration">
-            <div class="illustration-content">
-                <div class="illustration-icon">
-                    <i class="bi bi-shield-lock"></i>
-                </div>
-                <h2 class="illustration-title">Bienvenue sur Coursia</h2>
-                <p class="illustration-text">Connectez-vous pour accéder à votre espace d'administration et gérer vos livraisons.</p>
+            <div class="brand">
+                <h2>Coursia</h2>
+                <p>Plateforme de gestion des livraisons</p>
             </div>
+            <img src="{{ asset('images/image2-removebg-preview.png') }}" alt="Coursia">
         </div>
 
         <!-- Form Section -->
         <div class="login-form-section">
-            <div class="brand-logo">
-                <i class="bi bi-box-seam"></i>
-                <span>Coursia</span>
-            </div>
-
             <h1 class="login-title">Connexion</h1>
             <p class="login-subtitle">Entrez vos identifiants pour accéder à votre compte.</p>
 
@@ -271,19 +286,28 @@
 
             <form method="POST" action="{{ path('admin_login') }}">
                 <div class="mb-4">
-                    <label class="form-label">EMAIL</label>
-                    <input type="email" name="email" class="form-control" placeholder="identifiant@gmail.com" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$" title="L'adresse email doit être au format identifiant@gmail.com" required value="{{ last_email ?? '' }}">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="identifiant@gmail.com"
+                           pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$"
+                           title="L'adresse email doit être au format identifiant@gmail.com"
+                           required value="{{ last_email ?? '' }}">
                 </div>
 
-                <div class="mb-4">
-                    <label class="form-label">MOT DE PASSE</label>
-                    <input type="password" name="password" class="form-control" placeholder="Votre mot de passe" required>
-                    <div class="text-end mt-2">
-                        <a href="{{ path('admin_forgot_password') }}" style="font-size:13px; color:#6B7280; text-decoration:none;">Mot de passe oublié ?</a>
+                <div class="mb-2">
+                    <label class="form-label">Mot de passe</label>
+                    <div class="input-wrapper">
+                        <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Votre mot de passe" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-coursia mt-3">
+                <div class="text-end mb-4">
+                    <a href="{{ path('admin_forgot_password') }}" style="font-size:13px; color:#6B7280; text-decoration:none;">Mot de passe oublié ?</a>
+                </div>
+
+                <button type="submit" class="btn btn-coursia">
                     Se connecter <i class="bi bi-arrow-right"></i>
                 </button>
 
@@ -291,6 +315,20 @@
                     Pas encore de compte ? <a href="{{ path('admin_register') }}">Créer</a>
                 </p>
             </form>
+
+            <script>
+                function togglePassword() {
+                    const input = document.getElementById('passwordInput');
+                    const icon = document.getElementById('eyeIcon');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.className = 'bi bi-eye-slash';
+                    } else {
+                        input.type = 'password';
+                        icon.className = 'bi bi-eye';
+                    }
+                }
+            </script>
         </div>
     </div>
 </body>
