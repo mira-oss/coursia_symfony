@@ -18,7 +18,7 @@ class PasswordResetToken
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\Column(length: 6)]
+    #[ORM\Column(length: 64)]
     private ?string $code = null;
 
     #[ORM\Column]
@@ -33,13 +33,13 @@ class PasswordResetToken
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->expiresAt = new \DateTimeImmutable('+1 hour');
+        $this->expiresAt = new \DateTimeImmutable('+5 minutes');
         $this->code = $this->generateCode();
     }
 
     private function generateCode(): string
     {
-        return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        return str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
     }
 
     public function getId(): ?int

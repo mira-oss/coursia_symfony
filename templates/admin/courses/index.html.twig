@@ -77,9 +77,9 @@
         border-radius: 50px;
     }
 
-    .type-regional    { background: #DBEAFE; color: #1D4ED8; }
-    .type-national    { background: #EDE9FE; color: #6D28D9; }
-    .type-international { background: #FEF3C7; color: #B45309; }
+    .type-regional      { background: rgba(66,32,87,0.08);  color: #422057; border: 1px solid rgba(66,32,87,0.15); }
+    .type-national      { background: rgba(92,46,122,0.10); color: #5c2e7a; border: 1px solid rgba(92,46,122,0.18); }
+    .type-international { background: rgba(255,214,98,0.18); color: #7a5200; border: 1px solid rgba(255,214,98,0.40); }
 
     .status-pill {
         font-size: 12px;
@@ -92,12 +92,12 @@
         white-space: nowrap;
     }
 
-    .status-created      { background: #F3F4F6; color: #6B7280; }
-    .status-accepted     { background: #DBEAFE; color: #1D4ED8; }
-    .status-started      { background: #FFF7ED; color: #F97316; }
-    .status-delivered    { background: #FEF3C7; color: #D97706; }
-    .status-finished     { background: #DCFCE7; color: #16A34A; }
-    .status-cancelled    { background: #FEE2E2; color: #DC2626; }
+    .status-created      { background: #F3F4F6;              color: #6B7280; }
+    .status-accepted     { background: rgba(66,32,87,0.08);  color: #422057; }
+    .status-started      { background: rgba(255,214,98,0.18); color: #7a5200; }
+    .status-delivered    { background: rgba(255,214,98,0.30); color: #5a3c00; }
+    .status-finished     { background: #DCFCE7;              color: #16A34A; }
+    .status-cancelled    { background: #FEE2E2;              color: #DC2626; }
 
     .trajet-cell small {
         display: block;
@@ -120,8 +120,8 @@
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--coursia-orange), #FB923C);
-        color: white;
+        background: linear-gradient(135deg, #422057, #5c2e7a);
+        color: #FFD662;
         font-size: 12px;
         font-weight: 700;
         display: inline-flex;
@@ -261,7 +261,7 @@
                     </td>
                     <td>
                         <div style="display:flex;align-items:center;">
-                            <div class="chevalier-avatar" style="background:linear-gradient(135deg,#3B82F6,#6366F1);">
+                            <div class="chevalier-avatar">
                                 {{ course.createdBy.firstName|slice(0,1)|upper }}
                             </div>
                             <span class="chevalier-name">{{ course.createdBy.firstName }} {{ course.createdBy.lastName|slice(0,1)|upper }}.</span>

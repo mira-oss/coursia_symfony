@@ -59,7 +59,7 @@ class ChevalierRequestController extends AbstractController
             return $this->json(['error' => 'Non authentifié'], 401);
         }
 
-        if ($currentUser->getRole() !== 'elu') {
+        if (!in_array($currentUser->getRole(), ['elu', 'chevalier_pending'])) {
             return $this->json(['error' => 'Seul un Élu peut faire une demande pour devenir Chevalier'], 400);
         }
 

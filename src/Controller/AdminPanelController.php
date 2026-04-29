@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 #[Route('/admin')]
@@ -128,7 +129,18 @@ class AdminPanelController extends AbstractController
                 } else {
                     // Connexion réussie
                     $session->set('admin_id', $user->getId());
-                    return $this->redirectToRoute('admin_dashboard');
+                    $response = $this->redirectToRoute('admin_dashboard');
+                    // Se souvenir de moi : cookie 30 jours
+                    if ($request->request->get('remember')) {
+                        $token = hash('sha256', $user->getId() . $user->getEmail() . $_ENV['APP_SECRET'] ?? 'coursia');
+                        $response->headers->setCookie(Cookie::create('coursia_remember')
+                            ->withValue($user->getId() . ':' . $token)
+                            ->withExpires(new \DateTime('+30 days'))
+                            ->withHttpOnly(true)
+                            ->withSameSite('lax')
+                        );
+                    }
+                    return $response;
                 }
             }
         }
@@ -143,7 +155,9 @@ class AdminPanelController extends AbstractController
     public function logout(SessionInterface $session): Response
     {
         $session->remove('admin_id');
-        return $this->redirectToRoute('admin_login');
+        $response = $this->redirectToRoute('admin_login');
+        $response->headers->clearCookie('coursia_remember');
+        return $response;
     }
 
     // ================= DASHBOARD =================
@@ -785,9 +799,10 @@ class AdminPanelController extends AbstractController
             'query' => $query,
             'results' => $results,
             'totalResults' => $totalResults,
-            'pending_chevaliers_count' => $this->getPendingChevalierCount()
+            'pending_chevaliers_count' => $this->getPendingChevalierCount(),
         ]);
     }
+    
 
     // ================= PROFIL =================
     #[Route('/profile', name: 'admin_profile', methods: ['GET', 'POST'])]
@@ -1052,10 +1067,80 @@ class AdminPanelController extends AbstractController
         ]);
     }
 
+    // ================= RESET PASSWORD VIA LIEN (MOBILE) =================
+
+    #[Route('/reset-password/{token}', name: 'web_reset_password', methods: ['GET', 'POST'])]
+    public function resetPasswordByToken(string $token, Request $request): Response
+    {
+        $resetToken = $this->em->getRepository(PasswordResetToken::class)
+            ->findValidTokenByCode($token);
+
+        if (!$resetToken) {
+            return $this->render('admin/reset_password_link.html.twig', [
+                'invalid' => true,
+                'success' => false,
+                'error' => null,
+                'token' => $token,
+            ]);
+        }
+
+        $error = null;
+
+        if ($request->isMethod('POST')) {
+            $newPassword = $request->request->get('newPassword', '');
+            $confirmPassword = $request->request->get('confirmPassword', '');
+
+            if (empty($newPassword)) {
+                $error = 'Veuillez saisir un nouveau mot de passe';
+            } elseif (strlen($newPassword) < 6) {
+                $error = 'Le mot de passe doit contenir au moins 6 caractères';
+            } elseif ($newPassword !== $confirmPassword) {
+                $error = 'Les mots de passe ne correspondent pas';
+            } else {
+                $user = $resetToken->getUser();
+                $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
+                $resetToken->setUsed(true);
+                $this->em->flush();
+
+                return $this->render('admin/reset_password_link.html.twig', [
+                    'invalid' => false,
+                    'success' => true,
+                    'error' => null,
+                    'token' => $token,
+                ]);
+            }
+        }
+
+        return $this->render('admin/reset_password_link.html.twig', [
+            'invalid' => false,
+            'success' => false,
+            'error' => $error,
+            'token' => $token,
+        ]);
+    }
+
     // ================= HELPERS =================
-    private function getAdmin(SessionInterface $session): ?User
+    private function getAdmin(SessionInterface $session, Request $request = null): ?User
     {
         $adminId = $session->get('admin_id');
+
+        // Si pas de session, vérifier le cookie remember me
+        if (!$adminId && $request) {
+            $cookie = $request->cookies->get('coursia_remember');
+            if ($cookie && str_contains($cookie, ':')) {
+                [$cookieId, $cookieToken] = explode(':', $cookie, 2);
+                $user = $this->em->getRepository(User::class)->find((int) $cookieId);
+                if ($user && $user->getRole() === 'admin') {
+                    $expected = hash('sha256', $user->getId() . $user->getEmail() . $_ENV['APP_SECRET'] ?? 'coursia');
+                    if (hash_equals($expected, $cookieToken)) {
+                        $session->set('admin_id', $user->getId());
+                        return $user;
+                    }
+                }
+            }
+            return null;
+        }
+
         if (!$adminId) {
             return null;
         }

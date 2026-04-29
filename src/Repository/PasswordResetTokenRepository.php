@@ -34,6 +34,18 @@ class PasswordResetTokenRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findValidTokenByCode(string $token): ?PasswordResetToken
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.code = :token')
+            ->andWhere('t.used = false')
+            ->andWhere('t.expiresAt > :now')
+            ->setParameter('token', $token)
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * Invalide tous les tokens précédents d'un utilisateur
      */

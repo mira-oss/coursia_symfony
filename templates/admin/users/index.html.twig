@@ -3,99 +3,247 @@
 {% block title %}Utilisateurs - Coursia Admin{% endblock %}
 {% block page_title %}Utilisateurs{% endblock %}
 
+{% block extra_css %}
+<style>
+    .avatar-circle {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 14px;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #422057 0%, #5c2e7a 100%);
+        color: #FFD662;
+    }
+
+    .role-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 12px; font-weight: 600;
+        padding: 5px 12px; border-radius: 50px;
+    }
+
+    .role-badge.admin {
+        background: rgba(220,38,38,0.10);
+        color: #DC2626;
+        border: 1px solid rgba(220,38,38,0.20);
+    }
+
+    .role-badge.chevalier {
+        background: rgba(66,32,87,0.10);
+        color: #422057;
+        border: 1px solid rgba(66,32,87,0.20);
+    }
+
+    .role-badge.elu {
+        background: rgba(255,214,98,0.20);
+        color: #7a5200;
+        border: 1px solid rgba(255,214,98,0.50);
+    }
+
+    .status-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 12px; font-weight: 600;
+        padding: 5px 12px; border-radius: 50px;
+    }
+
+    .status-badge.actif {
+        background: rgba(22,163,74,0.10);
+        color: #16A34A;
+        border: 1px solid rgba(22,163,74,0.20);
+    }
+
+    .status-badge.inactif {
+        background: rgba(107,114,128,0.10);
+        color: #6B7280;
+        border: 1px solid rgba(107,114,128,0.20);
+    }
+
+    .btn-action {
+        width: 34px; height: 34px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 8px; font-size: 15px;
+        border: 1.5px solid; cursor: pointer;
+        background: transparent; transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-action.view {
+        border-color: rgba(66,32,87,0.30);
+        color: #422057;
+    }
+    .btn-action.view:hover {
+        background: #422057; color: #FFD662;
+        border-color: #422057;
+    }
+
+    .btn-action.disable {
+        border-color: rgba(217,119,6,0.30);
+        color: #D97706;
+    }
+    .btn-action.disable:hover {
+        background: #D97706; color: white;
+        border-color: #D97706;
+    }
+
+    .btn-action.enable {
+        border-color: rgba(22,163,74,0.30);
+        color: #16A34A;
+    }
+    .btn-action.enable:hover {
+        background: #16A34A; color: white;
+        border-color: #16A34A;
+    }
+
+    /* ── Dark mode ── */
+    [data-theme="dark"] .avatar-circle {
+        background: linear-gradient(135deg, #5c2e7a 0%, #422057 100%);
+        color: #FFD662;
+    }
+
+    [data-theme="dark"] .role-badge.chevalier {
+        background: rgba(255,214,98,0.08);
+        color: #FFD662;
+        border-color: rgba(255,214,98,0.20);
+    }
+
+    [data-theme="dark"] .role-badge.elu {
+        background: rgba(255,214,98,0.12);
+        color: #FFD662;
+        border-color: rgba(255,214,98,0.25);
+    }
+
+    [data-theme="dark"] .role-badge.admin {
+        background: rgba(239,68,68,0.12);
+        color: #F87171;
+        border-color: rgba(239,68,68,0.25);
+    }
+
+    [data-theme="dark"] .status-badge.actif {
+        background: rgba(22,163,74,0.12);
+        color: #4ADE80;
+        border-color: rgba(22,163,74,0.25);
+    }
+
+    [data-theme="dark"] .status-badge.inactif {
+        background: rgba(156,163,175,0.10);
+        color: #9CA3AF;
+        border-color: rgba(156,163,175,0.20);
+    }
+
+    [data-theme="dark"] .btn-action.view {
+        border-color: rgba(255,214,98,0.25);
+        color: #FFD662;
+    }
+    [data-theme="dark"] .btn-action.view:hover {
+        background: #FFD662; color: #422057;
+        border-color: #FFD662;
+    }
+
+    [data-theme="dark"] .btn-action.disable {
+        border-color: rgba(251,191,36,0.25);
+        color: #FBBF24;
+    }
+
+    [data-theme="dark"] .btn-action.enable {
+        border-color: rgba(74,222,128,0.25);
+        color: #4ADE80;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>Liste des utilisateurs ({{ users|length }})</span>
         <div class="d-flex gap-2">
             <select class="form-select form-select-sm" style="width: auto;" id="roleFilter">
-                <option value="">Tous les roles</option>
-                <option value="elu" {{ app.request.get('role') == 'elu' ? 'selected' : '' }}>Elus</option>
+                <option value="">Tous les rôles</option>
+                <option value="elu"       {{ app.request.get('role') == 'elu'       ? 'selected' : '' }}>Élus</option>
                 <option value="chevalier" {{ app.request.get('role') == 'chevalier' ? 'selected' : '' }}>Chevaliers</option>
-                <option value="admin" {{ app.request.get('role') == 'admin' ? 'selected' : '' }}>Admins</option>
+                <option value="admin"     {{ app.request.get('role') == 'admin'     ? 'selected' : '' }}>Admins</option>
             </select>
         </div>
     </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Email</th>
-                    <th>Telephone</th>
-                    <th>Role</th>
-                    <th>Statut</th>
-                    <th>Inscrit le</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="bg-{{ user.role == 'admin' ? 'danger' : (user.role == 'chevalier' ? 'success' : 'primary') }} text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
-                                {{ user.firstName|slice(0,1)|upper }}
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Rôle</th>
+                        <th>Statut</th>
+                        <th>Inscrit le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-circle">
+                                    {{ user.firstName|slice(0,1)|upper }}
+                                </div>
+                                {{ user.firstName }} {{ user.lastName }}
                             </div>
-                            {{ user.firstName }} {{ user.lastName }}
-                        </div>
-                    </td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.phone ?? '-' }}</td>
-                    <td>
-                        {% if user.role == 'admin' %}
-                            <span class="badge bg-danger">Admin</span>
-                        {% elseif user.role == 'chevalier' %}
-                            <span class="badge bg-success">Chevalier</span>
-                            {% if user.isVerified %}
-                                <i class="bi bi-check-circle-fill text-success" title="Verifie"></i>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.phone ?? '-' }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                                <span class="role-badge admin"><i class="bi bi-shield-fill"></i> Admin</span>
+                            {% elseif user.role == 'chevalier' %}
+                                <span class="role-badge chevalier"><i class="bi bi-award"></i> Chevalier</span>
+                                {% if user.isVerified %}
+                                    <i class="bi bi-check-circle-fill text-success ms-1" title="Vérifié"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle-fill text-warning ms-1" title="Non vérifié"></i>
+                                {% endif %}
                             {% else %}
-                                <i class="bi bi-x-circle-fill text-warning" title="Non verifie"></i>
+                                <span class="role-badge elu"><i class="bi bi-person-check"></i> Élu</span>
                             {% endif %}
-                        {% else %}
-                            <span class="badge bg-primary">Elu</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if user.isActive %}
-                            <span class="badge bg-success">Actif</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Inactif</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span>{{ user.createdAt|date('d/m/Y') }}</span><br>
-                        <small class="text-muted">{{ user.createdAt|date('H:i') }}</small>
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir">
-                                <i class="bi bi-eye"></i>
-                            </a>
+                        </td>
+                        <td>
                             {% if user.isActive %}
-                                <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" style="display:inline;" onsubmit="return confirm('Désactiver cet utilisateur ?')">
-                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Désactiver">
-                                        <i class="bi bi-pause-circle"></i>
-                                    </button>
-                                </form>
+                                <span class="status-badge actif"><i class="bi bi-circle-fill" style="font-size:8px;"></i> Actif</span>
                             {% else %}
-                                <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Activer">
-                                        <i class="bi bi-play-circle"></i>
-                                    </button>
-                                </form>
+                                <span class="status-badge inactif"><i class="bi bi-circle" style="font-size:8px;"></i> Inactif</span>
                             {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="8" class="text-center text-muted">Aucun utilisateur</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                        <td>
+                            <span>{{ user.createdAt|date('d/m/Y') }}</span><br>
+                            <small class="text-muted">{{ user.createdAt|date('H:i') }}</small>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn-action view" title="Voir">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if user.isActive %}
+                                    <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" style="display:inline;" onsubmit="return confirm('Désactiver cet utilisateur ?')">
+                                        <button type="submit" class="btn-action disable" title="Désactiver">
+                                            <i class="bi bi-pause-circle"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{{ path('admin_users_toggle', {id: user.id}) }}" style="display:inline;">
+                                        <button type="submit" class="btn-action enable" title="Activer">
+                                            <i class="bi bi-play-circle"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">Aucun utilisateur</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

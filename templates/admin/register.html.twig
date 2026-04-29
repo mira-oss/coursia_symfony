@@ -6,313 +6,252 @@
     <title>Inscription - Coursia Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --coursia-orange: #F97316;
-            --coursia-orange-hover: #EA580C;
-            --coursia-dark: #020617;
-            --coursia-gray: #E5E7EB;
-            --coursia-gray-light: #F9FAFB;
-        }
-
-        * {
-            font-family: 'Inter', sans-serif;
-        }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #F5F5F5;
+            background: #F3F4F6;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            padding: 20px;
+            padding: 24px;
         }
 
         .register-container {
-            background: white;
-            border-radius: 30px;
-            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.15),
-                        0 8px 30px rgba(0, 0, 0, 0.1),
-                        0 0 0 1px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
             display: flex;
-            width: 75%;
-            max-width: 1200px;
-            height: 80vh;
-            min-height: 650px;
+            width: 1020px;
+            max-width: 100%;
+            min-height: 480px;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.14), 0 4px 20px rgba(0,0,0,0.08);
         }
 
-        .register-illustration {
-            background: linear-gradient(135deg, var(--coursia-orange) 0%, #FB923C 100%);
-            flex: 0 0 50%;
+        /* ── Panneau gauche ── */
+        .register-left {
+            flex: 0 0 44%;
+            background: linear-gradient(160deg, #422057 0%, #5c2e7a 50%, #3a1a4e 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 52px 48px;
+            overflow: hidden;
+        }
+
+        .deco-circle { position: absolute; border-radius: 50%; }
+        .deco-circle.c1 { width: 320px; height: 320px; bottom: -100px; right: -100px; background: rgba(255,214,98,0.08); }
+        .deco-circle.c2 { width: 180px; height: 180px; bottom: 80px;   right: 80px;   background: rgba(255,214,98,0.06); }
+        .deco-circle.c3 { width: 100px; height: 100px; top: 50px;      right: 40px;   background: rgba(255,214,98,0.10); }
+        .deco-circle.c4 { width: 60px;  height: 60px;  top: 160px;     left: -20px;   background: rgba(255,214,98,0.07); }
+
+        .deco-dots {
+            position: absolute; bottom: 140px; left: 36px;
+            display: grid; grid-template-columns: repeat(4, 8px); gap: 10px;
+        }
+        .deco-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,214,98,0.25); display: block; }
+
+        /* ── Panneau droit ── */
+        .register-right {
+            flex: 1;
+            background: #fff;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .register-illustration::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        }
-
-        .illustration-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            color: white;
-        }
-
-        .illustration-icon {
-            font-size: 100px;
-            margin-bottom: 25px;
-            opacity: 0.9;
-        }
-
-        .illustration-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .illustration-text {
-            font-size: 15px;
-            opacity: 0.9;
-            max-width: 280px;
-            line-height: 1.6;
-        }
-
-        .register-form-section {
-            flex: 1;
-            padding: 40px 50px;
+            padding: 48px 56px;
             overflow-y: auto;
-            background: #FAFBFC;
         }
-
-        .register-form-section::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .register-form-section::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .register-form-section::-webkit-scrollbar-thumb {
-            background: var(--coursia-orange);
-            border-radius: 10px;
-        }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .brand-logo i {
-            font-size: 28px;
-            color: var(--coursia-orange);
-        }
-
-        .brand-logo span {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--coursia-dark);
-        }
+        .register-right::-webkit-scrollbar { width: 3px; }
+        .register-right::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
 
         .register-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--coursia-dark);
-            margin-bottom: 8px;
+            font-size: 26px;
+            font-weight: 800;
+            color: #111827;
+            text-align: center;
+            margin-bottom: 4px;
+            margin-top: -24px;
         }
 
         .register-subtitle {
-            color: #6B7280;
-            font-size: 14px;
-            margin-bottom: 30px;
+            color: #9CA3AF;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #422057;
+            margin: 18px 0 12px 0;
+            opacity: 0.6;
         }
 
         .form-label {
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #6B7280;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
             margin-bottom: 6px;
+            display: block;
         }
 
         .form-control, .form-select {
-            border: none;
-            border-bottom: 2px solid var(--coursia-gray);
-            border-radius: 0;
-            padding: 10px 0;
+            border: 2px solid #D1D5DB;
+            border-radius: 12px;
+            padding: 11px 14px;
             font-size: 14px;
-            transition: border-color 0.3s;
+            color: #111827;
+            background: #fff;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
         }
 
         .form-control:focus, .form-select:focus {
-            box-shadow: none;
-            border-color: var(--coursia-orange);
+            outline: none;
+            border-color: #422057;
+            box-shadow: 0 0 0 3px rgba(66,32,87,0.10);
         }
 
-        .form-control::placeholder {
-            color: #9CA3AF;
-        }
+        .form-control::placeholder { color: #A0AEC0; }
 
-        .btn-coursia {
-            background: var(--coursia-orange);
+        .field-wrap { position: relative; }
+        .eye-btn {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            color: #9CA3AF; font-size: 18px;
+            cursor: pointer; padding: 0; line-height: 1;
+            transition: color 0.2s;
+        }
+        .eye-btn:hover { color: #422057; }
+        .field-wrap .form-control { padding-right: 44px; }
+
+        .btn-register {
+            background: #422057;
             border: none;
-            border-radius: 50px;
-            padding: 14px 35px;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .btn-coursia:hover {
-            background: var(--coursia-orange-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
-        }
-
-        .btn-coursia i {
-            margin-left: 8px;
-        }
-
-        .alert {
             border-radius: 12px;
-            border: none;
-            font-size: 14px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #FFD662;
+            width: 100%;
+            margin-top: 24px;
+            cursor: pointer;
+            transition: all 0.25s;
+            letter-spacing: 0.3px;
         }
 
-        .alert-danger {
-            background: #FEE2E2;
-            color: #991B1B;
+        .btn-register:hover {
+            background: #331746;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(66,32,87,0.30);
         }
 
         .back-link {
-            color: var(--coursia-orange);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin-top: 20px;
             justify-content: center;
-            transition: all 0.3s;
+            gap: 6px;
+            margin-top: 14px;
+            color: #9CA3AF;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
         }
 
-        .back-link:hover {
-            color: var(--coursia-orange-hover);
-            transform: translateX(-3px);
-        }
+        .back-link:hover { color: #422057; }
 
-        .form-section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--coursia-dark);
-            margin-top: 25px;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--coursia-gray);
+        .alert {
+            border-radius: 12px; border: none;
+            font-size: 13px; padding: 12px 16px; margin-bottom: 16px;
         }
+        .alert-danger { background: #FEE2E2; color: #991B1B; }
 
         @media (max-width: 768px) {
-            .register-illustration {
-                display: none;
-            }
-            .register-form-section {
-                padding: 30px;
-            }
+            .register-container { flex-direction: column; }
+            .register-left { flex: none; min-height: 160px; padding: 32px 28px; }
+            .register-right { padding: 32px 24px; }
         }
     </style>
 </head>
 <body>
     <div class="register-container">
-        <!-- Illustration Section -->
-        <div class="register-illustration">
-            <div class="illustration-content">
-                <div class="illustration-icon">
-                    <i class="bi bi-person-plus"></i>
-                </div>
-                <h2 class="illustration-title">Rejoignez Coursia</h2>
-                <p class="illustration-text">Créez votre compte administrateur et commencez à gérer votre plateforme de livraison.</p>
+
+        <!-- ── Gauche ── -->
+        <div class="register-left">
+            <div class="deco-circle c1"></div>
+            <div class="deco-circle c2"></div>
+            <div class="deco-circle c3"></div>
+            <div class="deco-circle c4"></div>
+            <div class="deco-dots">
+                {% for i in 1..12 %}<span></span>{% endfor %}
             </div>
         </div>
 
-        <!-- Form Section -->
-        <div class="register-form-section">
-            <div class="brand-logo">
-                <i class="bi bi-box-seam"></i>
-                <span>Coursia</span>
-            </div>
-
-            <h1 class="register-title">Créer un compte</h1>
-            <p class="register-subtitle">Remplissez vos informations pour vous inscrire en tant qu'administrateur.</p>
+        <!-- ── Droite ── -->
+        <div class="register-right">
+            <h1 class="register-title">Inscription</h1>
+            <p class="register-subtitle">Remplissez vos informations pour créer votre compte.</p>
 
             {% if error %}
-                <div class="alert alert-danger mb-4">
+                <div class="alert alert-danger">
                     <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
                 </div>
             {% endif %}
 
             <form method="POST" action="{{ path('admin_register') }}">
-                <div class="form-section-title">
-                    <i class="bi bi-person me-2"></i>Informations personnelles
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">PRENOM *</label>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Prénom</label>
                         <input type="text" name="firstName" class="form-control" placeholder="Votre prénom" required value="{{ data.firstName ?? '' }}">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">NOM *</label>
+                    <div class="col-md-6">
+                        <label class="form-label">Nom</label>
                         <input type="text" name="lastName" class="form-control" placeholder="Votre nom" required value="{{ data.lastName ?? '' }}">
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">EMAIL *</label>
-                        <input type="email" name="email" class="form-control" placeholder="identifiant@gmail.com" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$" title="L'adresse email doit être au format identifiant@gmail.com" required value="{{ data.email ?? '' }}">
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="identifiant@gmail.com"
+                               pattern="[a-zA-Z0-9._%+\-]+@gmail\.com$" required value="{{ data.email ?? '' }}">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">TELEPHONE *</label>
-                        <input type="text" name="phone" class="form-control" placeholder="+229 XX XX XX XX" required value="{{ data.phone ?? '' }}">
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" name="phone" class="form-control" placeholder="01XXXXXXXX" required value="{{ data.phone ?? '' }}">
                     </div>
                 </div>
 
-                <div class="form-section-title">
-                    <i class="bi bi-lock me-2"></i>Sécurité
+                <div class="section-label">Sécurité</div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Mot de passe</label>
+                        <div class="field-wrap">
+                            <input type="password" id="pwd1" name="password" class="form-control" placeholder="Minimum 6 caractères" required minlength="6">
+                            <button type="button" class="eye-btn" onclick="togglePwd('pwd1','eye1')">
+                                <i class="bi bi-eye" id="eye1"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Confirmer</label>
+                        <div class="field-wrap">
+                            <input type="password" id="pwd2" name="confirmPassword" class="form-control" placeholder="Confirmez le mot de passe" required minlength="6">
+                            <button type="button" class="eye-btn" onclick="togglePwd('pwd2','eye2')">
+                                <i class="bi bi-eye" id="eye2"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">MOT DE PASSE *</label>
-                        <input type="password" name="password" class="form-control" placeholder="Minimum 6 caractères" required minlength="6">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">CONFIRMER *</label>
-                        <input type="password" name="confirmPassword" class="form-control" placeholder="Confirmez le mot de passe" required minlength="6">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-coursia mt-3">
-                    Créer mon compte <i class="bi bi-arrow-right"></i>
+                <button type="submit" class="btn-register">
+                    Créer mon compte <i class="bi bi-arrow-right ms-1"></i>
                 </button>
 
                 <a href="{{ path('admin_login') }}" class="back-link">
@@ -320,6 +259,20 @@
                 </a>
             </form>
         </div>
+
     </div>
+<script>
+    function togglePwd(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon  = document.getElementById(iconId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+</script>
 </body>
 </html>

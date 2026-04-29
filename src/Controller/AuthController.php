@@ -8,11 +8,10 @@ use App\Repository\PasswordResetTokenRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -85,10 +84,14 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Ce numéro de téléphone est déjà associé à un compte'], 400);
         }
 
+        // Rôle : elu par défaut, chevalier_pending si demandé
+        $requestedRole = $data['role'] ?? 'elu';
+        $role = ($requestedRole === 'chevalier_pending') ? 'chevalier_pending' : 'elu';
+
         $user = new User();
         $user->setEmail($email)
             ->setPassword($this->passwordHasher->hashPassword($user, $password))
-            ->setRole('elu') // Toujours "elu" à l'inscription (chevalier via demande admin)
+            ->setRole($role)
             ->setFirstName($firstName)
             ->setLastName($lastName)
             ->setPhone($phone)
@@ -98,14 +101,17 @@ class AuthController extends AbstractController
         $this->em->persist($user);
         $this->em->flush();
 
+        $token = $this->jwtManager->create($user);
+
         return $this->json([
             'message' => 'Compte créé avec succès',
+            'token'   => $token,
             'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
+                'id'        => $user->getId(),
+                'email'     => $user->getEmail(),
                 'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'role' => $user->getRole(),
+                'lastName'  => $user->getLastName(),
+                'role'      => $user->getRole(),
             ]
         ], 201);
     }
@@ -117,8 +123,9 @@ class AuthController extends AbstractController
         $token = $this->jwtManager->create($user);
 
         return $this->json([
-            'token' => $token,
-            'role' => $user->getRole()
+            'token'     => $token,
+            'role'      => $user->getRole(),
+            'isPending' => $user->getRole() === 'chevalier_pending',
         ]);
     }
 
@@ -267,19 +274,27 @@ class AuthController extends AbstractController
         $this->em->persist($token);
         $this->em->flush();
 
-        // Envoyer l'email
+        // Envoyer l'email avec le code à 6 chiffres
         try {
             $emailMessage = (new Email())
-                ->from('noreply@coursia.com')
+                ->from('coursiadev@gmail.com')
                 ->to($user->getEmail())
-                ->subject('Coursia - Réinitialisation de mot de passe')
-                ->html(sprintf(
-                    '<h2>Réinitialisation de mot de passe</h2>
-                    <p>Bonjour %s,</p>
-                    <p>Votre code de réinitialisation est : <strong>%s</strong></p>
-                    <p>Ce code expire dans 1 heure.</p>
-                    <p>Si vous n\'avez pas demandé cette réinitialisation, ignorez cet email.</p>
-                    <p>L\'équipe Coursia</p>',
+                ->subject('Coursia - Code de vérification')
+                ->html(sprintf('
+                    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:40px 32px;background:#fff;border-radius:16px;border:1px solid #E5E7EB;">
+                        <div style="text-align:center;margin-bottom:28px;">
+                            <div style="width:60px;height:60px;background:#FFF7ED;border-radius:50%%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">🔐</div>
+                        </div>
+                        <h2 style="color:#111827;font-size:20px;font-weight:700;text-align:center;margin:0 0 8px;">Réinitialisation du mot de passe</h2>
+                        <p style="color:#6B7280;font-size:14px;text-align:center;margin:0 0 32px;">Bonjour <strong>%s</strong>, voici votre code de vérification :</p>
+                        <div style="background:#F9FAFB;border:2px dashed #F97316;border-radius:14px;padding:24px;text-align:center;margin-bottom:28px;">
+                            <span style="font-size:40px;font-weight:800;letter-spacing:14px;color:#F97316;font-family:monospace;">%s</span>
+                        </div>
+                        <p style="color:#9CA3AF;font-size:13px;text-align:center;margin:0 0 8px;">Ce code expire dans <strong>5 minutes</strong>.</p>
+                        <p style="color:#9CA3AF;font-size:12px;text-align:center;margin:0;">Si vous n\'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+                        <hr style="border:none;border-top:1px solid #E5E7EB;margin:28px 0 16px;">
+                        <p style="color:#D1D5DB;font-size:11px;text-align:center;margin:0;">L\'équipe Coursia</p>
+                    </div>',
                     $user->getFirstName(),
                     $token->getCode()
                 ));
@@ -289,14 +304,7 @@ class AuthController extends AbstractController
             // Log l'erreur mais ne pas bloquer l'utilisateur
         }
 
-        $response = ['message' => 'Un code de réinitialisation a été envoyé à votre email'];
-
-        // En développement, retourner le code directement (mailer non configuré)
-        if ($_ENV['APP_ENV'] === 'dev') {
-            $response['dev_code'] = $token->getCode();
-        }
-
-        return $this->json($response);
+        return $this->json(['message' => 'Un code de réinitialisation a été envoyé à votre email']);
     }
 
     // ================= RESET PASSWORD =================
@@ -313,8 +321,8 @@ class AuthController extends AbstractController
             return $this->json(['error' => 'Email, code et nouveau mot de passe requis'], 400);
         }
 
-        if (strlen($newPassword) < 6) {
-            return $this->json(['error' => 'Le mot de passe doit contenir au moins 6 caractères'], 400);
+        if (strlen($newPassword) < 8) {
+            return $this->json(['error' => 'Le mot de passe doit contenir au moins 8 caractères'], 400);
         }
 
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
